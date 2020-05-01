@@ -21,7 +21,8 @@
     "vue-golden-layout": "^2.0.5",
     "vue-property-decorator": "^8.4.1",
     "vue-router": "^3.0.1",
-    "vuetify": "^2.2.22"
+    "vuetify": "^2.2.22",
+    "vuex": "^3.3.0"
   },
   "devDependencies": {
     "@mdi/font": "^5.1.45",

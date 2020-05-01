@@ -6,6 +6,7 @@ import router from './router'
 import Vuetify from 'vuetify'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
+import store from './store'
 
 
 import '@mdi/font/css/materialdesignicons.css'
@@ -27,10 +28,11 @@ const vuetifyOptions = {theme: {
 new Vue({
   el: '#App',
   router,
+  store,
   icons: {
     iconfont: 'mdi',
   },
   vuetify: new Vuetify(vuetifyOptions),
   components: { App },
   template: '<App/>'
-}).$mount('#App')
+})

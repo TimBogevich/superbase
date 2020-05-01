@@ -16,17 +16,18 @@
             v-if="loadMetadata==false"
             v-model="tree"
             :open="open"
-            :items="items"
+            :items="metadata"
+            item-text="objectName"
             activatable
-            item-key="name"
+            item-key="objectName"
             open-on-click
             >
                 <template v-slot:prepend="{ item, open }">
-                <v-icon v-if="!item.file">
+                <v-icon v-if="!item.objectType">
                     {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
                 </v-icon>
                 <v-icon v-else>
-                    {{ files[item.file] }}
+                    {{ files[item.objectType] }}
                 </v-icon>
                 </template>
             </v-treeview>
@@ -41,8 +42,8 @@
                 <v-overflow-btn
                 class="ml-5"
                 :items="connections"
-                label="connections"
-                target="#dropdown"
+                label="connection"
+                value="1"
                 ></v-overflow-btn>
             </v-col>
             <v-btn class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
@@ -54,13 +55,7 @@
             fill-height
             >
             <v-row>
-                    <MonacoEditor
-                    height="300"
-                    width="1600"
-                    theme="vs-dark"
-                    language="sql"
-                    v-model="query"
-                    ></MonacoEditor>
+                <codeEditor />
             </v-row>
             <v-row>
                 <v-progress-linear v-if="this.progressBar == false" color="yellow darken-2"></v-progress-linear>
@@ -97,7 +92,7 @@
 <script>
 
 import nunjucks from "nunjucks"
-import MonacoEditor from 'monaco-editor-vue';
+import codeEditor from "./codeEditor"
 
 var request = `select * from broccoli22.items`
 
@@ -125,49 +120,21 @@ var schema = {
 }
 
 export default {
-    components: {
-        MonacoEditor
-    },
+    components: {codeEditor},
     data() {
         return {
             progressBar: false,
             query: request,
-            loadMetadata : false,
-            metadata : null,
-            connections : ["broccoli", "mdm"],
             schema: schema,
             resultTable: [{" ":"Result will be here"}],
             open: ['public'],
             files: {
-                database: 'mdi-database',
-                table: 'mdi-table',
+                Database: 'mdi-database',
+                "SYSTEM VIEW": 'mdi-view-grid-outline',
+                VIEW: 'mdi-view-grid-outline',
+                TABLE : 'mdi-table',
             },
             tree: [],
-            items: [
-            {
-                name: 'LEW_BIL',
-                file: 'database',
-            },
-            {
-                name: 'LEW_CORE',
-                file: 'database',
-            },
-            {
-                name: 'LEW_BIL',
-                file: 'database',
-                children: [
-                {
-                    name: 'reiepts',
-                    file: 'table',
-                },
-                {
-                    name: 'headers',
-                    file: 'table',
-                },
-                ],
-            },
-           
-            ],
         }
     },
     computed: {
@@ -179,8 +146,14 @@ export default {
                     return { text: item, value: item }
                 })
         },
-        metadataNested: function() {
-            var nested = []
+        connections() {
+            return this.$store.getters.getConnection
+        },
+        metadata() {
+            return this.$store.getters.getMetadata
+        },
+        loadMetadata() {
+            return this.$store.getters.getLoadMetadata
         }
     },
     methods: {
@@ -188,10 +161,11 @@ export default {
             this.progressBar = true
             var body =  {
             database:"broccoli",
-            query: this.result
+            query: this.result,
+            limit: 10
             }
 
-            this.axios.post("http://127.0.0.1:4000", body)
+            this.axios.post("http://127.0.0.1:4000/sql", body)
             .then((response) => {
                 console.log(response.data)
                 this.resultTable = response.data
@@ -201,14 +175,9 @@ export default {
                 this.progressBar = "failed" 
             });
         }
-    },
+    }, 
     created: function() {
-        this.loadMetadata = true
-        this.axios.post("http://127.0.0.1:4000/metadata", {"database":"broccoli"})
-        .then((response) => {
-            this.metadata = response.data
-            this.loadMetadata = false
-        })
+        this.$store.dispatch("actMetadata")
     }
 
 }
