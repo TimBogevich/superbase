@@ -1,26 +1,44 @@
 <template>
     <div>
-        <MonacoEditor
-        height="300"
-        width="1600"
-        theme="vs-dark"
-        language="sql"
-        v-model="query"
-        ></MonacoEditor>
+        <codemirror 
+        v-model="query" 
+        @ready="onCodemirrorReady"
+        :options="cmOptions" />
     </div>
 </template>
 
 
 <script>
-    import MonacoEditor from 'monaco-editor-vue';
-    var request = `select * from broccoli22.items`
+import 'codemirror/theme/ayu-mirage.css'
+import 'codemirror/addon/hint/show-hint.css';
+import 'codemirror/addon/hint/show-hint';
+import 'codemirror/addon/hint/sql-hint';
+import 'codemirror/addon/hint/anyword-hint';
+import 'codemirror/mode/sql/sql'
+import { get,sync } from 'vuex-pathify'
+
 export default {
-    components: {
-        MonacoEditor
-    },
     data() {
         return {
-            query: request,
+            cmOptions: {
+                tabSize: 4,
+                mode: 'text/x-sql',
+                theme: 'ayu-mirage',
+                lineNumbers: true,
+                line: true,
+                // more CodeMirror options...
+            }
+        }
+    },
+    computed:{
+        query: sync("general/query")
+            
+    },
+    methods: {
+        onCodemirrorReady (cm) {
+            cm.on('keypress', () => {
+                cm.showHint({completeSingle:false})
+            })
         }
     },
 }

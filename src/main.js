@@ -7,6 +7,9 @@ import Vuetify from 'vuetify'
 import axios from 'axios'
 import VueAxios from 'vue-axios'
 import store from './store'
+import VueCodemirror from 'vue-codemirror'
+import 'codemirror/lib/codemirror.css'
+
 
 
 import '@mdi/font/css/materialdesignicons.css'
@@ -15,6 +18,7 @@ import 'vuetify/dist/vuetify.css'
 
 Vue.use(Vuetify)
 Vue.use(VueAxios, axios)
+Vue.use(VueCodemirror)
 
 Vue.axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 Vue.axios.defaults.headers.common['Content-Type'] = 'application/json';   

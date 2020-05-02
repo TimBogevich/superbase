@@ -55,7 +55,10 @@
             fill-height
             >
             <v-row>
-                <codeEditor />
+                <v-col
+                cols="12">
+                    <codeEditor />
+                </v-col>
             </v-row>
             <v-row>
                 <v-progress-linear v-if="this.progressBar == false" color="yellow darken-2"></v-progress-linear>
@@ -76,7 +79,7 @@
                         <v-textarea
                         disabled
                         no-resize
-                        auto-grow="true"
+                        auto-grow
                         v-model="result"
                         ></v-textarea>
                     </v-tab-item>
@@ -93,39 +96,18 @@
 
 import nunjucks from "nunjucks"
 import codeEditor from "./codeEditor"
+import { get, sync, call } from 'vuex-pathify'
 
-var request = `select * from broccoli22.items`
+var request = `select * from employees.employees`
 
 
-var schema = {
-    "tables": [
-        {
-            "name":"customer",
-            "columns":[
-                "id",
-                "name",
-                "address",
-                "telephone"
-            ]
-        },
-        {
-            "name":"countries",
-            "columns":[
-                "id",
-                "name",
-                "iso_code"
-            ]
-        }
-    ]
-}
+
 
 export default {
     components: {codeEditor},
     data() {
         return {
             progressBar: false,
-            query: request,
-            schema: schema,
             resultTable: [{" ":"Result will be here"}],
             open: ['public'],
             files: {
@@ -139,22 +121,18 @@ export default {
     },
     computed: {
         result : function() {
-            return nunjucks.renderString(this.query,schema)
+            return nunjucks.renderString(this.query,this.schema)
         },
         headers: function() {
             return Object.keys(this.resultTable[0]).map((item)=> {
                     return { text: item, value: item }
                 })
         },
-        connections() {
-            return this.$store.getters.getConnection
-        },
-        metadata() {
-            return this.$store.getters.getMetadata
-        },
-        loadMetadata() {
-            return this.$store.getters.getLoadMetadata
-        }
+        connections: get('general/connections'),
+        metadata:get('general/metadata'),
+        query:get('general/query'),
+        schema:get('general/schema'),
+        loadMetadata: get('general/loadMetadata'),
     },
     methods: {
         sendSQL: function(query) {
@@ -177,12 +155,14 @@ export default {
         }
     }, 
     created: function() {
-        this.$store.dispatch("actMetadata")
+        this.$store.dispatch("general/actMetadata")
     }
 
 }
 </script>
 
 <style>
-
+#vue-codemirror {
+  width: auto;
+}
 </style>
