@@ -1,5 +1,19 @@
 <template>
     <div>
+        <v-tabs append-icon="mdi-plus" v-model="selectedTab">
+            <v-tab
+            @click.middle="closeTab(index)" 
+            v-for="(item, index) in tabsExt" :key="index">
+                 {{ item.tabInfo}}
+            </v-tab>
+            <v-btn 
+            @click="addTab()"
+            color="gray"
+            class="align-self-center mr-4">
+                NEW
+                <v-icon right>mdi-plus</v-icon>
+            </v-btn>
+        </v-tabs>
         <codemirror 
         v-model="query" 
         @ready="onCodemirrorReady"
@@ -31,7 +45,26 @@ export default {
         }
     },
     computed:{
-        query: sync("general/query")
+        selectedTab: sync("general/selectedTab"),
+        tabs: sync("general/tabs"),
+        tabsExt() {
+            return this.tabs.map(item => {
+                if (item.query == "") {
+                    return {query: item.query,tabInfo: "new file" }
+                }
+                else {
+                    return {query: item.query, tabInfo: item.query.trim().substring(0,10)}
+                }
+            })
+        },
+        query: {
+            get() {
+                return this.tabs[this.selectedTab].query
+            },
+            set(data) {
+                this.tabs[this.selectedTab].query = data
+            }
+        }
             
     },
     methods: {
@@ -39,7 +72,24 @@ export default {
             cm.on('keypress', () => {
                 cm.showHint({completeSingle:false})
             })
+        },
+        addTab() {
+            this.$store.dispatch("general/addNewTab")
+        },
+        closeTab(tabIndex) {
+            this.$store.dispatch("general/closeTab", tabIndex)
         }
     },
 }
 </script>
+
+
+<style>
+#vue-codemirror {
+  width: auto;
+}
+
+.CodeMirror {
+    background: transparent !important;
+}
+</style>
