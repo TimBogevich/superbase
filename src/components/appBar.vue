@@ -5,15 +5,18 @@
         clipped-left>
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
             <v-toolbar-title>SQL editor </v-toolbar-title>
-            <v-col
-            cols="2">
-                <v-select
-                v-model="selectedConnection"
-                :items="connections">
-                </v-select>
-            </v-col>
             <v-col cols="1">
                 <v-btn class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
+            </v-col>
+            <v-col cols="1">
+                <v-btn class="ml-5"  color="grey darken-2" v-on:click="showFileManager = !showFileManager">Save
+                    <v-icon>mdi-file</v-icon>
+                </v-btn>
+            </v-col>
+            <v-col cols="1">
+                <router-link to="fileManager">
+                    <v-btn class="ml-5"  color="grey darken-2">File manager</v-btn>
+                </router-link>
             </v-col>
             <v-spacer class="d-none d-sm-flex d-xs-flex"></v-spacer>
             <v-col cols="1">
@@ -47,17 +50,17 @@ import { get, sync, call } from 'vuex-pathify'
 
 export default {
     computed: {
-        selectedConnection : sync("general/selectedConnection"),
+
         dataServer : sync('general/dataServer'),
         limitRows : sync('general/limitRows'),
-        connections : get('general/connections'),
         connectionIcon : get ('general/connectionIcon'),
         drawer : sync('general/drawer'),
+        showFileManager: sync("general/showFileManager"),
     },
     methods: {
         sendSQL() {
             this.$store.dispatch("general/sendSQL")
-        }
+        },
     }, 
 }
 </script>

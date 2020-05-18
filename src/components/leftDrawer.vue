@@ -5,6 +5,14 @@
         v-model="drawer"
         clipped
         >
+            <v-select
+            v-model="selectedConnection"
+            outlined
+            append-icon="mdi-server"
+            :items="connections">
+            </v-select>
+
+
             <v-progress-linear
             v-if="loadMetadata==true"
             color="light-blue"
@@ -55,6 +63,8 @@ export default {
         }
     },
     computed: {
+        selectedConnection : sync("general/selectedConnection"),
+        connections : get('general/connections'),
         metadata : get('general/metadata'),
         loadMetadata: get('general/loadMetadata'),
         drawer : sync('general/drawer'),

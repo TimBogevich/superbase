@@ -16,8 +16,8 @@
                     <resultArea />
                 </v-col>
             </v-row>
+            <fileSaver />
         </v-content>
-
     </div>
 </template>
 
@@ -28,16 +28,17 @@ import codeEditor from "./codeEditor"
 import leftDrawer from "./leftDrawer"
 import appBar from "./appBar"
 import resultArea from "./resultArea"
+import fileSaver from "./fileSaver"
 
 
 
 export default {
-    components: {codeEditor,leftDrawer, appBar,resultArea},
+    components: {codeEditor,leftDrawer, appBar,resultArea, fileSaver},
     created: async function() {
-        console.log(process)
         const connection = this.$store.dispatch("general/connectToDataServer")
         const metadata = this.$store.dispatch("general/actMetadata")
-        Promise.all([connection,metadata])
+        const files = this.$store.dispatch("general/getFiles")
+        Promise.all([connection,metadata, files])
     }
 }
 </script>

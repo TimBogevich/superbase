@@ -17,6 +17,9 @@ const  state =  {
         queryProgressBar:false,
         limitRows:10,
         output: "",
+        showFileManager: false,
+        fileManagerLoading: false,
+        fileManager: {files:["test.txt", "create_customer.sql"]},
         metadata: null,
         loadMetadata: false,
         schema:{
@@ -59,9 +62,9 @@ const actions = {
         })
     },
     async connectToDataServer({commit,state}) {
-        state.connectionIcon = "mdi-sync-circle"
+        commit('SET_CONNECTION_ICON', "mdi-sync-circle")
         const connections = await axios.get(state.dataServer + "/connections")
-        state.connectionIcon = "mdi-check-circle"
+        commit('SET_CONNECTION_ICON', "mdi-check-circle")
         return connections
     },
     addNewTab({commit,state}) {
@@ -83,6 +86,19 @@ const actions = {
         console.log(tabs)
         commit('SET_TABS', tabs)
     
+    },
+    getFiles({commit,state}) {
+        axios.post(state.dataServer +  "/getFiles")
+        .then((result) => state.fileManager.files = result.data )
+    },
+    saveFile({commit,state}, filename) {
+        commit("SET_FILE_MANAGER_LOADING", true)
+        let payload = {
+            filename : filename,
+            data : state.tabs[state.selectedTab].query
+        }
+        axios.post(state.dataServer +  "/saveFile", payload)
+        .then(commit("SET_FILE_MANAGER_LOADING", false))
     },
     sendSQL({commit,state}) {
         commit("SET_QUERY_PROGRESS_BAR", true)

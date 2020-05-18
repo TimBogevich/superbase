@@ -1,11 +1,12 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import mainScreen from '@/components/mainScreen'
-import test from '@/components/test'
+import fileManager from '@/components/fileManager'
 
 Vue.use(Router)
 
 export default new Router({
+    mode: 'history',
   routes: [
     {
       path: '/',
@@ -13,9 +14,9 @@ export default new Router({
       component: mainScreen
     },
     {
-        path: '/test',
-        name: 'test',
-        component: test
+        path: '/fileManager',
+        name: 'fileManager',
+        component: fileManager
       }
   ]
 })
