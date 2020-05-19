@@ -12,11 +12,13 @@
         <v-content>
             <v-container grid-list-md>
                   <v-card>
-                    <v-toolbar flat color="primary" dark>
+                    <v-toolbar flat color="gray" dark>
                     <v-toolbar-title>Files in Store</v-toolbar-title>
                     </v-toolbar>
-                    <v-tabs vertical>
+                    <v-tabs
+                    vertical>
                     <v-tab
+                    right
                     v-for="(item, index) in fileManager.files" :key="index">
                         <v-icon left>mdi-file</v-icon>
                         {{item}}
@@ -41,10 +43,14 @@
 
 <script>
 import { get,sync } from 'vuex-pathify'
+
 export default {
     computed: {
         dataServer : get("general/dataServer"),
         fileManager : get("general/fileManager"),
     },
+    created: function() {
+        this.$store.dispatch("general/getFiles")
+    }
 }
 </script>

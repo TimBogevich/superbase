@@ -9,10 +9,8 @@
             v-model="selectedConnection"
             outlined
             append-icon="mdi-server"
-            :items="connections">
+            :items="connectionsList">
             </v-select>
-
-
             <v-progress-linear
             v-if="loadMetadata==true"
             color="light-blue"
@@ -68,6 +66,17 @@ export default {
         metadata : get('general/metadata'),
         loadMetadata: get('general/loadMetadata'),
         drawer : sync('general/drawer'),
+        connectionsList() {
+            return this.connections.map((item) => item.name)
+        } 
+
     },
 }
 </script>
+
+
+<style>
+.v-text-field__details {
+  display: none;
+}
+</style>

@@ -8,16 +8,17 @@
             <v-col cols="1">
                 <v-btn class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
             </v-col>
-            <v-col cols="1">
-                <v-btn class="ml-5"  color="grey darken-2" v-on:click="showFileManager = !showFileManager">Save
-                    <v-icon>mdi-file</v-icon>
+            <v-btn-toggle multiple mandatory>
+                <v-btn  color="black" v-on:click="showFileManager = !showFileManager">Save
+                    <v-icon>mdi-floppy</v-icon>
                 </v-btn>
-            </v-col>
-            <v-col cols="1">
-                <router-link to="fileManager">
-                    <v-btn class="ml-5"  color="grey darken-2">File manager</v-btn>
+                <router-link to="fileManager"> 
+                    <v-btn color="black">File manager</v-btn>
                 </router-link>
-            </v-col>
+                <router-link to="connectionManager"> 
+                    <v-btn color="black">Connections</v-btn>
+                </router-link>             
+            </v-btn-toggle>
             <v-spacer class="d-none d-sm-flex d-xs-flex"></v-spacer>
             <v-col cols="1">
                 <v-text-field

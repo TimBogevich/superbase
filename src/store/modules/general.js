@@ -11,15 +11,15 @@ const  state =  {
         selectedTab : 0,
         tabs: [{query:"--select * from employees.employees"}],
         query : "select * from employees.employees",
-        connections : ["broccoli"],
+        connections : [],
         connectionIcon: "",
-        selectedConnection: "broccoli",
+        selectedConnection: null,
         queryProgressBar:false,
         limitRows:10,
         output: "",
         showFileManager: false,
         fileManagerLoading: false,
-        fileManager: {files:["test.txt", "create_customer.sql"]},
+        fileManager: {files:[]},
         metadata: null,
         loadMetadata: false,
         schema:{
@@ -61,9 +61,23 @@ const actions = {
             commit('SET_LOAD_METADATA', false)
         })
     },
+    async reconnectToDatabase({state,commit},connectionName) {
+        const reconnect = await axios.get(state.dataServer + "/connections/reconnect/" + connectionName)
+        const connections = axios.get(state.dataServer + "/connections")
+        .then(result => commit('SET_CONNECTIONS', result.data))
+        return connections
+    },
+    async disconnectDatabase({state,commit},connectionName) {
+        const reconnect = await axios.get(state.dataServer + "/connections/disconnect/" + connectionName)
+        const connections = axios.get(state.dataServer + "/connections")
+        .then(result => commit('SET_CONNECTIONS', result.data))
+        return connections
+    },
     async connectToDataServer({commit,state}) {
         commit('SET_CONNECTION_ICON', "mdi-sync-circle")
         const connections = await axios.get(state.dataServer + "/connections")
+        commit('SET_CONNECTIONS', connections.data)
+        commit('SET_SELECTED_CONNECTION', connections.data[0].name)
         commit('SET_CONNECTION_ICON', "mdi-check-circle")
         return connections
     },

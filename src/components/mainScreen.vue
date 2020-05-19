@@ -34,12 +34,6 @@ import fileSaver from "./fileSaver"
 
 export default {
     components: {codeEditor,leftDrawer, appBar,resultArea, fileSaver},
-    created: async function() {
-        const connection = this.$store.dispatch("general/connectToDataServer")
-        const metadata = this.$store.dispatch("general/actMetadata")
-        const files = this.$store.dispatch("general/getFiles")
-        Promise.all([connection,metadata, files])
-    }
 }
 </script>
 
