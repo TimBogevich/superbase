@@ -15,12 +15,13 @@ const  state =  {
         connectionIcon: "",
         selectedConnection: null,
         queryProgressBar:false,
+        mainProgressBar:false,
         limitRows:10,
         output: "",
         showFileManager: false,
         fileManagerLoading: false,
         fileManager: {files:[]},
-        metadata: null,
+        metadata : [],
         loadMetadata: false,
         schema:{
             "tables": [
@@ -49,22 +50,51 @@ const mutations =  {
     addTab(state) {
         state.tabs.push({query:""})
     },
+    setMetadata(state, payload) {
+        state.metadata.push(payload)
+    },
     ...make.mutations(state),
     }
 
+const getters = {
+    getMetadata(state) {
+        let object =  state.metadata.filter(item => item.connectionName == state.selectedConnection)
+        if (object[0]) {
+            return object[0].metadata
+        }
+        else {
+            return []
+        }
+    }
+}
+
 const actions = {
-    actMetadata({commit}) {
+    async actMetadata({commit,state}) {
         commit('SET_LOAD_METADATA', true)
-        axios.post(state.dataServer +  "/metadata", {"database":"broccoli"})
-        .then((response) => {
-            commit('SET_METADATA', response.data)
-            commit('SET_LOAD_METADATA', false)
-        })
+        let selectedConnection = state.selectedConnection
+        let exists = state.metadata.filter(item => item.connectionName == selectedConnection )
+        console.log(exists)
+
+        if (exists.length == 0) {
+            const metadata = await axios.post(state.dataServer +  "/metadataCatalog", {"database":selectedConnection})
+            commit('setMetadata', {connectionName : selectedConnection, metadata : metadata.data})
+        }
+        commit('SET_LOAD_METADATA', false)
+
+
     },
     async reconnectToDatabase({state,commit},connectionName) {
         const reconnect = await axios.get(state.dataServer + "/connections/reconnect/" + connectionName)
         const connections = axios.get(state.dataServer + "/connections")
         .then(result => commit('SET_CONNECTIONS', result.data))
+        return connections
+    },
+    async createConnection({commit}, newConnection){
+        commit('SET_MAIN_PROGRESS_BAR', true)
+        const creaConnection = await axios.post(state.dataServer + "/connections/createConnection", newConnection)
+        const connections = await axios.get(state.dataServer + "/connections")
+        commit('SET_CONNECTIONS', connections.data)
+        commit('SET_MAIN_PROGRESS_BAR', false)
         return connections
     },
     async disconnectDatabase({state,commit},connectionName) {
@@ -141,6 +171,7 @@ const actions = {
 export default {
     namespaced: true,
     state,
+    getters,
     mutations,
     actions,
     }
