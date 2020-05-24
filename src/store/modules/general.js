@@ -72,13 +72,8 @@ const actions = {
     async actMetadata({commit,state}) {
         commit('SET_LOAD_METADATA', true)
         let selectedConnection = state.selectedConnection
-        let exists = state.metadata.filter(item => item.connectionName == selectedConnection )
-        console.log(exists)
-
-        if (exists.length == 0) {
-            const metadata = await axios.post(state.dataServer +  "/metadataCatalog", {"database":selectedConnection})
-            commit('setMetadata', {connectionName : selectedConnection, metadata : metadata.data})
-        }
+        const metadata = await axios.post(state.dataServer +  "/metadataCatalog", {"database":selectedConnection})
+        commit('setMetadata', {connectionName : selectedConnection, metadata : metadata.data})
         commit('SET_LOAD_METADATA', false)
 
 
