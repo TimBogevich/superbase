@@ -12,9 +12,6 @@
                 <v-btn  color="black" v-on:click="showFileManager = !showFileManager">Save
                     <v-icon>mdi-floppy</v-icon>
                 </v-btn>
-                <router-link to="fileManager"> 
-                    <v-btn color="black">File manager</v-btn>
-                </router-link>
                 <router-link to="connectionManager"> 
                     <v-btn color="black">Connections</v-btn>
                 </router-link>             

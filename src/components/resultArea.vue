@@ -11,11 +11,12 @@
             <v-tab-item key="1">
                 <v-data-table
                     :headers="headers"
-                    :items="resultTable"
+                    :items="resultTable.data"
                     :items-per-page="5"
                     hide-default-footer
                     disable-pagination
                 ></v-data-table>
+                <mugen-scroll :handler="loadMoreResults" :should-handle="Boolean(this.resultTable.query)"></mugen-scroll>
             </v-tab-item>
             <v-tab-item key="2">
                 <v-textarea
@@ -41,22 +42,36 @@
 <script>
 import nunjucks from "nunjucks"
 import { get, sync, call } from 'vuex-pathify'
+import MugenScroll from 'vue-mugen-scroll'
+
 export default {
+    components : {
+        MugenScroll
+    },
     computed: {
         result : function() {
             return nunjucks.renderString(this.query,this.schema)
         },
         headers: function() {
-            return Object.keys(this.resultTable[0]).map((item)=> {
+            return Object.keys(this.resultTable.data[0]).map((item)=> {
                     return { text: item, value: item }
                 })
         },
         schema : get('general/schema'),
         output : get("general/output"),
-        query : get('general/query'),
+        selectedTab: sync("general/selectedTab"),
+        tabs: sync("general/tabs"),
         queryProgressBar: get("general/queryProgressBar"),
         resultTable : get('general/resultTable'),
+        query() {
+            return this.tabs[this.selectedTab].query
+        },
 
     },
+    methods: {
+        loadMoreResults() {
+            this.$store.dispatch("general/loadMoreResults")
+        },
+    }
 }
 </script>

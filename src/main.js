@@ -8,10 +8,8 @@ import axios from 'axios'
 import VueAxios from 'vue-axios'
 import store from './store'
 import VueCodemirror from 'vue-codemirror'
+
 import 'codemirror/lib/codemirror.css'
-
-
-
 import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/dist/vuetify.css'
 

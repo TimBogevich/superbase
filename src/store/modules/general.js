@@ -5,18 +5,18 @@ import { make, set } from 'vuex-pathify'
 
 const  state =  {
         drawer: true,
-        resultTable: [{" ":"Result will be here"}],
+        resultTable: {"data" : [{" ":"Result will be here"}]},
         dataServer : "http://localhost:4000",
         //dataServer : "https://superbase.datamachines.ru",
         selectedTab : 0,
-        tabs: [{query:"--select * from employees.employees"}],
+        tabs: [{query:"select * from employees.employees"}],
         query : "select * from employees.employees",
         connections : [],
         connectionIcon: "",
         selectedConnection: null,
         queryProgressBar:false,
         mainProgressBar:false,
-        limitRows:10,
+        limitRows:50,
         output: "",
         showFileManager: false,
         fileManagerLoading: false,
@@ -50,6 +50,11 @@ const mutations =  {
     addTab(state) {
         state.tabs.push({query:""})
     },
+    setCatalog(state, catalog) {
+        console.log(catalog)
+        let selectedConnection = state.connections.filter(item => item.name == state.selectedConnection)[0]
+        selectedConnection.catalog = catalog
+    },
     setMetadata(state, payload) {
         state.metadata.push(payload)
     },
@@ -65,6 +70,9 @@ const getters = {
         else {
             return []
         }
+    },
+    getSelectedConnectionObj(state) {
+        return state.connections.find(item => item.name == state.selectedConnection)
     }
 }
 
@@ -159,7 +167,20 @@ const actions = {
         })
 
         return metadata
+    },
+    async loadMoreResults({commit,state}) {
+        var body =  {
+            resultId : state.resultTable.resultId,
+            limit : state.limitRows,
+        }
+        const result = await axios.post(state.dataServer + "/sqlScroll", body)
+        state.resultTable.data = state.resultTable.data.concat(result.data.data)
+    },
+    async setDefaultCatalog({commit,state}, catalog) {
+        const result = await axios.post(state.dataServer + "/setDefaultCatalog", {database : state.selectedConnection, catalog})
     }
+
+
         
 }
 
