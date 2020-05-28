@@ -32,19 +32,43 @@ import 'codemirror/mode/sql/sql'
 import { get,sync } from 'vuex-pathify'
 
 export default {
-    data() {
-        return {
-            cmOptions: {
+    computed:{
+        tables: get("general/getTables"),
+        cmOptions_old() {
+            return {
                 tabSize: 4,
                 mode: 'text/x-sql',
                 theme: 'ayu-mirage',
                 lineNumbers: true,
                 line: true,
-                // more CodeMirror options...
+                hintOptions: {
+                    tables: {
+                        "employees": [ 
+                                "col_B",
+                                 "col_C" 
+                                ],
+                    }
+                }
             }
-        }
-    },
-    computed:{
+        },
+        cmOptions() {
+            var tables = this.tables
+            if (Object.keys(tables).length > 0 ) {
+                var hintOptions = {tables}
+            }
+            else {
+                var hintOptions = {}
+            }
+        
+            return {
+                tabSize: 4,
+                mode: 'text/x-sql',
+                theme: 'ayu-mirage',
+                lineNumbers: true,
+                line: true,
+                hintOptions 
+            }
+        },
         selectedTab: sync("general/selectedTab"),
         tabs: sync("general/tabs"),
         tabsExt() {

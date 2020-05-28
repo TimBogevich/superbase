@@ -26,32 +26,17 @@ const  state =  {
         metadata : [],
         leftDrawerBottom: 0,
         loadMetadata: false,
-        schema:{
-            "tables": [
-                {
-                    "name":"customer",
-                    "columns":[
-                        "id",
-                        "name",
-                        "address",
-                        "telephone"
-                    ]
-                },
-                {
-                    "name":"countries",
-                    "columns":[
-                        "id",
-                        "name",
-                        "iso_code"
-                    ]
-                }
-            ]
-        }
+        schema:{}
     }
 
 const mutations =  {
     addTab(state) {
         state.tabs.push({query:""})
+    },
+    addMetadataChildren(state,{metadataItem, children}) {
+        const metadataObj = state.metadata.find(item => item.connectionName == metadataItem.database ).metadata
+        const catalog = metadataObj.find(item => item.objectName == metadataItem.catalog)
+        catalog.children = children.data
     },
     setCatalog(state, catalog) {
         console.log(catalog)
@@ -73,6 +58,25 @@ const getters = {
         else {
             return []
         }
+    },
+    getTables(state, getters) {
+        var tables = {}
+
+        function func(obj) {
+            let name = obj.objectName
+            if (obj.columns) {
+                tables[name] = obj.columns.map(item => item.columnName)
+            }
+            if (!obj.children) {
+                return
+            }
+            obj.children.forEach(child => func(child))
+        }
+        try {
+            getters.getMetadata.forEach(item => func(item))
+        } catch(error){}
+
+        return tables
     },
     getSelectedConnectionObj(state) {
         return state.connections.find(item => item.name == state.selectedConnection)

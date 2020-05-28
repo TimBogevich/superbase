@@ -34,7 +34,7 @@
                 item-text="objectName"
                 activatable
                 item-key="objectName"
-                :load-children="openTree"
+                :load-children="expandMetadataTree"
                 :active.sync="active"
                 return-object
                 >
@@ -60,7 +60,6 @@
                 :items="fileManager.children"
                 item-text="name"
                 item-key="objectName"
-                :load-children="openTree"
                 return-object
                 >
                     <template v-slot:prepend="{ item, open }">
@@ -84,11 +83,11 @@
                             </template>
 
                             <v-list>
-                            <v-list-item v-if="item.type=='file'">
-                                <v-list-item-title @click="openFile(item)">Open in editor</v-list-item-title>
+                            <v-list-item key="0"  @click="openFile(item)" v-if="item.type=='file'">
+                                <v-list-item-title>Open in editor</v-list-item-title>
                             </v-list-item>
-                            <v-list-item disabled>
-                                <v-list-item-title @click="openFile(item)">Delete</v-list-item-title>
+                            <v-list-item key="1" disabled>
+                                <v-list-item-title >Delete</v-list-item-title>
                             </v-list-item>
                             </v-list>
                         </v-menu>
@@ -190,13 +189,14 @@ export default {
         updateMetadata() {
             this.$store.dispatch("general/actMetadata")
         },
-        async openTree(item) {
-            let params = {
+        async expandMetadataTree(item) {
+            let metadataItem = {
                 "database": this.selectedConnectionObj.name,
                 "catalog" : item.objectName
             }
-            const metadata = await axios.post("http://localhost:4000/metadataObject", params )
-            item.children = metadata.data
+            const children = await axios.post("http://localhost:4000/metadataObject", metadataItem)
+            this.$store.commit("general/addMetadataChildren", {metadataItem, children})
+            //item.children = metadata.data
         },
         setNewCatalog(item) {
             if (item.objectType == "Database") {
