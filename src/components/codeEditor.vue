@@ -49,11 +49,12 @@ export default {
         tabs: sync("general/tabs"),
         tabsExt() {
             return this.tabs.map(item => {
+                let tabInfo = item.filename || item.query.trim().substring(0,10) || "new file"
+                return {query: item.query, tabInfo : tabInfo }
                 if (item.query == "") {
-                    return {query: item.query,tabInfo: "new file" }
                 }
                 else {
-                    return {query: item.query, tabInfo: item.query.trim().substring(0,10)}
+                    return {query: item.query, tabInfo }
                 }
             })
         },

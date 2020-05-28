@@ -14,6 +14,8 @@ const  state =  {
         connections : [],
         connectionIcon: "",
         selectedConnection: null,
+        selectedConnectionManager : [],
+        createNewConnection : false,
         queryProgressBar:false,
         mainProgressBar:false,
         limitRows:50,
@@ -22,6 +24,7 @@ const  state =  {
         fileManagerLoading: false,
         fileManager: {files:[]},
         metadata : [],
+        leftDrawerBottom: 0,
         loadMetadata: false,
         schema:{
             "tables": [
@@ -178,6 +181,11 @@ const actions = {
     },
     async setDefaultCatalog({commit,state}, catalog) {
         const result = await axios.post(state.dataServer + "/setDefaultCatalog", {database : state.selectedConnection, catalog})
+    },
+    async openFile({state,commit}, fileObj) {
+        const file = await axios.post(state.dataServer + "/getOneFile", fileObj)
+        state.tabs.push(file.data)
+        commit("SET_SELECTED_TAB", state.tabs.length - 1 )
     }
 
 

@@ -6,7 +6,7 @@
         clipped
         >
 
-            <div v-if="activeBtn==0">
+            <div v-if="leftDrawerBottom==0">
                 <v-select
                 v-model="selectedConnection"
                 @change="updateMetadata()"
@@ -53,60 +53,74 @@
             </div>
 
 
-            <div v-if="activeBtn==1">
+            <div v-if="leftDrawerBottom==1">
                 <v-treeview
                 v-if="loadMetadata==false"
                 :open="open"
-                :items="fileManager"
-                item-text="objectName"
-                activatable
+                :items="fileManager.children"
+                item-text="name"
                 item-key="objectName"
                 :load-children="openTree"
-                :active.sync="active"
                 return-object
                 >
                     <template v-slot:prepend="{ item, open }">
-                    <v-icon v-if="!item.objectType">
-                        {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-                    </v-icon>
-                    <v-icon v-else>
-                        {{ files[item.objectType] }}
-                    </v-icon>
+                        <v-icon v-if="!item.type">
+                            {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+                        </v-icon>
+                        <v-icon v-else>
+                            {{ files[item.type] }}
+                        </v-icon>
                     </template>
-                    <template v-slot:label="{ item }">
-                    <div @click="setNewCatalog(item)">{{item.objectName}}</div>
+                    <template  v-slot:append="{ item }">
+                        <v-menu left>
+                            <template v-slot:activator="{ on }">
+                            <v-btn
+                                dark
+                                icon
+                                v-on="on"
+                            >
+                                <v-icon>mdi-dots-vertical</v-icon>
+                            </v-btn>
+                            </template>
+
+                            <v-list>
+                            <v-list-item v-if="item.type=='file'">
+                                <v-list-item-title @click="openFile(item)">Open in editor</v-list-item-title>
+                            </v-list-item>
+                            <v-list-item disabled>
+                                <v-list-item-title @click="openFile(item)">Delete</v-list-item-title>
+                            </v-list-item>
+                            </v-list>
+                        </v-menu>
                     </template>
                 </v-treeview>
                 
             </div>
 
-            <div v-if="activeBtn==2">
+            <div
+             v-if="leftDrawerBottom==2">
                 <v-treeview
-                v-if="loadMetadata==false"
-                :open="open"
                 :items="connections"
-                item-text="name"
                 activatable
                 item-key="name"
-                :load-children="openTree"
-                :active.sync="active"
+                :active.sync="selectedConnectionManager"
                 return-object
                 >
-                    <template v-slot:prepend="{ item, open }">
+                    <template v-slot:prepend={}>
                     <v-icon>
-                        {{ open ? 'mdi-network' : 'mdi-network' }}
+                        mdi-network
                     </v-icon>
                     </template>
                     <template v-slot:label="{ item }">
                     <div @click="setNewCatalog(item)">{{item.name}} - {{item.status}}</div>
                     </template>
                 </v-treeview>
-                
+                <v-btn @click="createNewConnection=true" block="">+</v-btn>
             </div>
 
             <template v-slot:append>
                 <v-bottom-navigation
-                    v-model="activeBtn"
+                    v-model="leftDrawerBottom"
                     grow
                     color="teal"
                 >
@@ -140,16 +154,18 @@ export default {
     data() {
         return {
             catalog: "(choose catalog)",
-            activeBtn : 0,
+            dialog : true,
             open: [],
             active: [],
+            activeConnection : null,
             files: {
                 Database: 'mdi-database',
                 "SYSTEM VIEW": 'mdi-view-grid-outline',
                 VIEW: 'mdi-view-grid-outline',
                 TABLE : 'mdi-table',
-                file : 'mdi-file',
-                folder : 'mdi-folder',
+                "SYSTEM TABLE" : 'mdi-table',
+                file : 'mdi-file-document',
+                directory : 'mdi-folder-outline',
             },
         }
     },
@@ -159,8 +175,11 @@ export default {
         fileManager : get("general/fileManager.files"),
         connections : sync('general/connections'),
         metadata: get("general/getMetadata"),
+        createNewConnection : sync("general/createNewConnection"),
         loadMetadata: get('general/loadMetadata'),
         drawer : sync('general/drawer'),
+        selectedConnectionManager : sync('general/selectedConnectionManager'),
+        leftDrawerBottom : sync("general/leftDrawerBottom"),
         connectionsList() {
             return this.connections.map((item) => item.name)
         },
@@ -176,7 +195,6 @@ export default {
                 "database": this.selectedConnectionObj.name,
                 "catalog" : item.objectName
             }
-            console.log(item)
             const metadata = await axios.post("http://localhost:4000/metadataObject", params )
             item.children = metadata.data
         },
@@ -185,6 +203,9 @@ export default {
                 this.$store.dispatch("general/setDefaultCatalog", item.objectName)
                 this.catalog = item.objectName
             }
+        },
+        openFile(fileObj) {
+            this.$store.dispatch("general/openFile", fileObj)
         }
     },
 }
