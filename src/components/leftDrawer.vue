@@ -54,6 +54,7 @@
 
 
             <div v-if="leftDrawerBottom==1">
+                <div id="saver"></div>
                 <v-treeview
                 v-if="loadMetadata==false"
                 :open="open"
@@ -93,8 +94,11 @@
                         </v-menu>
                     </template>
                 </v-treeview>
-                
+                                
             </div>
+
+
+
 
             <div
              v-if="leftDrawerBottom==2">
@@ -114,7 +118,7 @@
                     <div @click="setNewCatalog(item)">{{item.name}} - {{item.status}}</div>
                     </template>
                 </v-treeview>
-                <v-btn @click="createNewConnection=true" block="">+</v-btn>
+                <v-btn @click="createNewConnection=true" block>+</v-btn>
             </div>
 
             <template v-slot:append>
@@ -154,6 +158,8 @@ export default {
         return {
             catalog: "(choose catalog)",
             dialog : true,
+            absolute: false,
+            fileNameToSave : "",
             open: [],
             active: [],
             activeConnection : null,
@@ -179,6 +185,7 @@ export default {
         drawer : sync('general/drawer'),
         selectedConnectionManager : sync('general/selectedConnectionManager'),
         leftDrawerBottom : sync("general/leftDrawerBottom"),
+        saveFileDialog : sync("general/saveFileDialog"),
         connectionsList() {
             return this.connections.map((item) => item.name)
         },
@@ -206,7 +213,7 @@ export default {
         },
         openFile(fileObj) {
             this.$store.dispatch("general/openFile", fileObj)
-        }
+        },
     },
 }
 </script>

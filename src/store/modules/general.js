@@ -23,6 +23,9 @@ const  state =  {
         showFileManager: false,
         fileManagerLoading: false,
         fileManager: {files:[]},
+        fileManagerSaver: false, 
+        saveFileDialog: false, 
+        tabForSaveOrClose : null,
         metadata : [],
         leftDrawerBottom: 0,
         loadMetadata: false,
@@ -146,7 +149,6 @@ const actions = {
         .then((result) => state.fileManager.files = result.data )
     },
     saveFile({commit,state}, filename) {
-        commit("SET_FILE_MANAGER_LOADING", true)
         let payload = {
             filename : filename,
             data : state.tabs[state.selectedTab].query

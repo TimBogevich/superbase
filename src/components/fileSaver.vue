@@ -7,14 +7,15 @@
         <v-list>
         <v-list-item-group v-model="selected" color="primary">
             <v-list-item
-            v-for="(filename, i) in fileManager.files"
+            v-for="(file, i) in fileManager.children"
             :key="i"
             >
             <v-list-item-icon>
-                <v-icon>mdi-file</v-icon>
+                <v-icon v-if="file.type=='file'">mdi-file</v-icon>
+                <v-icon v-if="file.type=='directory'">mdi-folder</v-icon>
             </v-list-item-icon>
             <v-list-item-content>
-                <v-list-item-title v-text="filename"></v-list-item-title>
+                <v-list-item-title v-text="file.name"></v-list-item-title>
             </v-list-item-content>
             </v-list-item>
         </v-list-item-group>
@@ -28,6 +29,7 @@
         ></v-text-field>
         <v-card-actions>
           <v-spacer></v-spacer>
+          <v-btn color="error">Don't save</v-btn>
           <v-btn color="gray darken-1" @click="showFileManager = false">Close</v-btn>
           <v-btn color="green darken-1" @click="saveFile()">Ok</v-btn>
         </v-card-actions>
@@ -49,12 +51,16 @@ export default {
     },
     computed : {
         showFileManager: sync("general/showFileManager"),
-        fileManager : get("general/fileManager"),
-        fileManagerLoading : get("general/fileManagerLoading")
+        fileManager : get("general/fileManager.files"),
+        fileManagerLoading : get("general/fileManagerLoading"),
+        leftDrawerBottom : sync("general/leftDrawerBottom"),
     },
     methods : {
         saveFile() {
             this.$store.dispatch("general/saveFile", this.filename)
+            this.showFileManager = false
+            this.$store.dispatch("general/getFiles")
+            this.leftDrawerBottom = 1
         }
     }
 }

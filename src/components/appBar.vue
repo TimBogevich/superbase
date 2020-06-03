@@ -6,13 +6,6 @@
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
             <v-toolbar-title>SQL editor </v-toolbar-title>
             <v-btn class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
-            <v-col cols="1">
-            </v-col>
-            <v-btn-toggle multiple mandatory>
-                <v-btn  color="black" v-on:click="showFileManager = !showFileManager">Save
-                    <v-icon>mdi-floppy</v-icon>
-                </v-btn>         
-            </v-btn-toggle>
             <v-spacer class="d-none d-sm-flex d-xs-flex"></v-spacer>
             <v-col cols="1">
                 <v-text-field

@@ -24,7 +24,7 @@
             <connectionManager absolute />
         </div>
     </v-content>
-
+    
 
   </div>
 </template>

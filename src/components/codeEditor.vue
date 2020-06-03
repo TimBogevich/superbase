@@ -1,11 +1,17 @@
 <template>
     <div>
         <v-tabs append-icon="mdi-plus" v-model="selectedTab">
-            <v-tab
-            @click.middle="closeTab(index)" 
-            v-for="(item, index) in tabsExt" :key="index">
-                 {{ item.tabInfo}}
-            </v-tab>
+                <v-hover v-for="(item, index) in tabsExt" :key="index"
+                v-slot:default="{ hover }"
+                >
+                    <v-tab>
+                        {{ item.tabInfo}}
+                        <v-btn icon @click="closeTab(index)" >
+                            <v-icon v-if="hover" small>mdi-close</v-icon>
+                            <v-icon v-else-if="item.edited==true" color="grey darken-1">mdi-circle-medium</v-icon>
+                        </v-btn>
+                    </v-tab>
+                </v-hover>
             <v-btn 
             @click="addTab()"
             color="gray"
@@ -32,25 +38,12 @@ import 'codemirror/mode/sql/sql'
 import { get,sync } from 'vuex-pathify'
 
 export default {
+    data() {
+        return {
+        }
+    },
     computed:{
         tables: get("general/getTables"),
-        cmOptions_old() {
-            return {
-                tabSize: 4,
-                mode: 'text/x-sql',
-                theme: 'ayu-mirage',
-                lineNumbers: true,
-                line: true,
-                hintOptions: {
-                    tables: {
-                        "employees": [ 
-                                "col_B",
-                                 "col_C" 
-                                ],
-                    }
-                }
-            }
-        },
         cmOptions() {
             var tables = this.tables
             if (Object.keys(tables).length > 0 ) {
@@ -70,16 +63,16 @@ export default {
             }
         },
         selectedTab: sync("general/selectedTab"),
+        showFileSaver: sync("general/showFileManager"),
+        saveFileDialog : sync("general/saveFileDialog"),
+        tabForSaveOrClose : sync("general/tabForSaveOrClose"),
+        leftDrawerBottom: sync("general/leftDrawerBottom"),
         tabs: sync("general/tabs"),
         tabsExt() {
             return this.tabs.map(item => {
                 let tabInfo = item.filename || item.query.trim().substring(0,10) || "new file"
-                return {query: item.query, tabInfo : tabInfo }
-                if (item.query == "") {
-                }
-                else {
-                    return {query: item.query, tabInfo }
-                }
+                return {query: item.query, tabInfo : tabInfo, edited: item.edited || false }
+
             })
         },
         query: {
@@ -87,7 +80,10 @@ export default {
                 return this.tabs[this.selectedTab].query
             },
             set(data) {
-                this.tabs[this.selectedTab].query = data
+                if (data) {
+                    this.tabs[this.selectedTab].query = data
+                    this.tabs[this.selectedTab].edited = true
+                }
             }
         }
             
@@ -101,9 +97,10 @@ export default {
         addTab() {
             this.$store.dispatch("general/addNewTab")
         },
-        closeTab(tabIndex) {
-            this.$store.dispatch("general/closeTab", tabIndex)
-        }
+        closeTab(item) {
+          this.tabForSaveOrClose = item
+          this.showFileSaver = true
+        },
     },
 }
 </script>
