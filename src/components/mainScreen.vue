@@ -4,12 +4,8 @@
     <appBar />
     <v-content>
         <div v-if="leftDrawerBottom in [0,1]"> 
-            <multipane class="horizontal-panes" layout="horizontal">
-                <v-row>
-                <v-col id="codeEditor" cols="12">
-                    <codeEditor />
-                </v-col>
-                </v-row>
+            <multipane layout="horizontal"> 
+                  <codeEditor  />
                 <multipane-resizer></multipane-resizer>
                 <v-row>
                 <v-col id="BottomPanel" cols="12">

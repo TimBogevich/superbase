@@ -1,5 +1,5 @@
 <template>
-    <div>
+    <div  :style="{ height: '400px'}">
         <v-tabs append-icon="mdi-plus" v-model="selectedTab">
                 <v-hover v-for="(item, index) in tabsExt" :key="index"
                 v-slot:default="{ hover }"
@@ -106,11 +106,14 @@ export default {
 
 
 <style>
-#vue-codemirror {
+  .vue-codemirror {
   width: auto;
-}
+  height: 100%;
+} 
+
 
 .CodeMirror {
     background: transparent !important;
+    height: 100%;
 }
 </style>
