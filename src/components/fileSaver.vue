@@ -29,7 +29,7 @@
         ></v-text-field>
         <v-card-actions>
           <v-spacer></v-spacer>
-          <v-btn color="error">Don't save</v-btn>
+          <v-btn color="error" @click="closeTab()">Don't save</v-btn>
           <v-btn color="gray darken-1" @click="showFileManager = false">Close</v-btn>
           <v-btn color="green darken-1" @click="saveFile()">Ok</v-btn>
         </v-card-actions>
@@ -50,18 +50,25 @@ export default {
       }
     },
     computed : {
-        showFileManager: sync("general/showFileManager"),
-        fileManager : get("general/fileManager.files"),
-        fileManagerLoading : get("general/fileManagerLoading"),
-        leftDrawerBottom : sync("general/leftDrawerBottom"),
+      showFileManager: sync("general/showFileManager"),
+      tabForSaveOrClose : sync("general/tabForSaveOrClose"),
+      fileManager : get("general/fileManager.files"),
+      fileManagerLoading : get("general/fileManagerLoading"),
+      leftDrawerBottom : sync("general/leftDrawerBottom"),
     },
     methods : {
-        saveFile() {
-            this.$store.dispatch("general/saveFile", this.filename)
-            this.showFileManager = false
-            this.$store.dispatch("general/getFiles")
-            this.leftDrawerBottom = 1
-        }
+      saveFile() {
+        this.$store.dispatch("general/saveFile", {filename : this.filename, tabIndex : this.tabForSaveOrClose})
+        this.showFileManager = false
+        this.$store.dispatch("general/getFiles")
+        this.leftDrawerBottom = 1
+        this.tabForSaveOrClose = null
+      },
+      closeTab() {
+        this.$store.dispatch("general/closeTab", this.tabForSaveOrClose)
+        this.showFileManager = false
+        this.tabForSaveOrClose = null
+      }
     }
 }
 </script>

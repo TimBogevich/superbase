@@ -6,7 +6,7 @@
                 >
                     <v-tab>
                         {{ item.tabInfo}}
-                        <v-btn icon @click="closeTab(index)" >
+                        <v-btn icon @click="closeOrSaveTab(index)" >
                             <v-icon v-if="hover" small>mdi-close</v-icon>
                             <v-icon v-else-if="item.edited==true" color="grey darken-1">mdi-circle-medium</v-icon>
                         </v-btn>
@@ -68,21 +68,15 @@ export default {
         tabForSaveOrClose : sync("general/tabForSaveOrClose"),
         leftDrawerBottom: sync("general/leftDrawerBottom"),
         tabs: sync("general/tabs"),
-        tabsExt() {
-            return this.tabs.map(item => {
-                let tabInfo = item.filename || item.query.trim().substring(0,10) || "new file"
-                return {query: item.query, tabInfo : tabInfo, edited: item.edited || false }
-
-            })
-        },
+        tabsExt : get("general/tabsExt"),
         query: {
             get() {
                 return this.tabs[this.selectedTab].query
             },
             set(data) {
-                if (data) {
-                    this.tabs[this.selectedTab].query = data
-                    this.tabs[this.selectedTab].edited = true
+                if (data != this.tabs[this.selectedTab].query ) {
+                  this.tabs[this.selectedTab].query = data
+                  this.tabs[this.selectedTab].edited = true
                 }
             }
         }
@@ -97,9 +91,14 @@ export default {
         addTab() {
             this.$store.dispatch("general/addNewTab")
         },
-        closeTab(item) {
-          this.tabForSaveOrClose = item
-          this.showFileSaver = true
+        closeOrSaveTab(item) {
+          if (this.tabs[item].edited) {
+            this.tabForSaveOrClose = item
+            this.showFileSaver = true
+          }
+          else{
+            this.$store.dispatch("general/closeTab", item)
+          }
         },
     },
 }

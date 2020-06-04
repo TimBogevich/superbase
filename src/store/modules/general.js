@@ -1,4 +1,4 @@
-import store from ".."
+import Vue from 'vue'
 import axios from 'axios'
 import { make, set } from 'vuex-pathify'
 
@@ -33,24 +33,35 @@ const  state =  {
     }
 
 const mutations =  {
-    addTab(state) {
-        state.tabs.push({query:""})
-    },
-    addMetadataChildren(state,{metadataItem, children}) {
-        const metadataObj = state.metadata.find(item => item.connectionName == metadataItem.database ).metadata
-        const catalog = metadataObj.find(item => item.objectName == metadataItem.catalog)
-        catalog.children = children.data
-    },
-    setCatalog(state, catalog) {
-        console.log(catalog)
-        let selectedConnection = state.connections.filter(item => item.name == state.selectedConnection)[0]
-        selectedConnection.catalog = catalog
-    },
-    setMetadata(state, payload) {
-        state.metadata.push(payload)
-    },
-    ...make.mutations(state),
+  closeTab(state, index) {
+    state.tabs.splice(index, 1)
+  },
+  addTab(state, payload) {
+    if (payload) {
+      state.tabs.push(payload)
     }
+    else {
+      state.tabs.push({query:""})
+    }
+  },
+  addMetadataChildren(state,{metadataItem, children}) {
+      const metadataObj = state.metadata.find(item => item.connectionName == metadataItem.database ).metadata
+      const catalog = metadataObj.find(item => item.objectName == metadataItem.catalog)
+      catalog.children = children.data
+  },
+  setCatalog(state, catalog) {
+      let selectedConnection = state.connections.filter(item => item.name == state.selectedConnection)[0]
+      selectedConnection.catalog = catalog
+  },
+  setMetadata(state, payload) {
+      state.metadata.push(payload)
+  },
+  changeTab(state, {tabIndex,payload}) {
+    //state.tabs[tabIndex] = payload
+    Vue.set(state.tabs, tabIndex, payload)
+  },
+  ...make.mutations(state),
+}
 
 const getters = {
     getMetadata(state) {
@@ -61,6 +72,13 @@ const getters = {
         else {
             return []
         }
+    },
+    tabsExt(state) {
+      return state.tabs.map(item => {
+          let tabInfo = item.filename || item.query.trim().substring(0,10) || "new file"
+          return {query: item.query, tabInfo : tabInfo, edited: item.edited || false }
+
+        })
     },
     getTables(state, getters) {
         var tables = {}
@@ -136,25 +154,24 @@ const actions = {
         if ( tabIndex != 0 ) {
             commit('SET_SELECTED_TAB', tabIndex - 1)
         }
-
-        let tabs = state.tabs.filter((item,key)=>{
-            return key != tabIndex
-        }) 
-        console.log(tabs)
-        commit('SET_TABS', tabs)
+        commit("closeTab", tabIndex)
     
     },
     getFiles({commit,state}) {
         axios.post(state.dataServer +  "/getFiles")
         .then((result) => state.fileManager.files = result.data )
     },
-    saveFile({commit,state}, filename) {
+    async saveFile({commit,state}, {filename,tabIndex}) {
+      let tab = state.tabs[tabIndex]
         let payload = {
             filename : filename,
-            data : state.tabs[state.selectedTab].query
+            data : tab.query
         }
-        axios.post(state.dataServer +  "/saveFile", payload)
-        .then(commit("SET_FILE_MANAGER_LOADING", false))
+        const saveFile = await axios.post(state.dataServer +  "/saveFile", payload)
+        commit("SET_FILE_MANAGER_LOADING", false)
+        tab.filename = filename 
+        tab.edited = false 
+        commit("changeTab", {tabIndex, payload : tab})
     },
     sendSQL({commit,state}) {
         commit("SET_QUERY_PROGRESS_BAR", true)
@@ -190,7 +207,7 @@ const actions = {
     },
     async openFile({state,commit}, fileObj) {
         const file = await axios.post(state.dataServer + "/getOneFile", fileObj)
-        state.tabs.push(file.data)
+        commit("addTab",  file.data)
         commit("SET_SELECTED_TAB", state.tabs.length - 1 )
     }
 
