@@ -5,7 +5,7 @@ import { make, set, dispatch } from 'vuex-pathify'
 
 const  state =  {
         drawer: true,
-        resultTable: [{"data" : [{" ":"Result will be here"}], queryType: "query"}],
+        resultTable: null,
         selectedTab : 0,
         tabs: [{query:"select * from employees.employees"}],
         query : "select * from employees.employees",

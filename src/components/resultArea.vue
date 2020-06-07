@@ -9,12 +9,18 @@
             <v-tab key="2">Compiled SQL</v-tab>
             <v-tab key="3">Output</v-tab>
 
-
             <v-tab-item key="1">
-              <v-tabs v-model="resultTableTab">
-                <v-tab v-for="(item, index) in resultTable" :key="index">
-                  {{item.query ? `${index+1}. ${item.query.substring(0,20)}` : index}}
-                </v-tab>
+              <div v-if="resultTable">
+
+                <v-tabs v-model="resultTableTab">
+                  <v-tooltip top v-for="(item, index) in resultTable" :key="index">
+                    <template v-slot:activator="{ on }">
+                      <v-tab v-on="on" >
+                        {{`${index+1}. ${item.query.substring(0,15)}`}}
+                      </v-tab>
+                    </template>
+                    <span>{{item.query}}</span>
+                  </v-tooltip>
                   <v-tab-item  v-for="(item, index) in resultTable" :key="index">
                     <div v-if="item.queryType == 'query'">
                       <v-data-table 
@@ -30,7 +36,9 @@
                       {{item.query}} - {{item.result}}
                     </div>
                   </v-tab-item>
-              </v-tabs>
+                </v-tabs>
+                
+              </div>
             </v-tab-item>
 
             <v-tab-item key="2">
