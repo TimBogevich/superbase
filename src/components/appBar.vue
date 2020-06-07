@@ -17,17 +17,14 @@
                 placeholder="Limit rows"
                 ></v-text-field>
             </v-col>
-            <v-col cols="2">
-                <v-text-field
-                class="d-none d-sm-flex d-xs-flex"
-                disabled
-                v-model="dataServer"
-                label="Data server"
-                :prepend-inner-icon="connectionIcon"
-                filled
-                placeholder="Placeholder"
-                ></v-text-field>
-            </v-col>
+            <v-tooltip>
+                <template v-slot:activator="{ on }">
+                  <v-btn icon v-on="on">
+                    <v-icon color="grey lighten-1">{{connectionIcon}}</v-icon>
+                  </v-btn>
+                </template>
+                <span>Data server {{dataServer}}</span>
+              </v-tooltip>
         </v-app-bar>
     </div>
 </template>
@@ -38,8 +35,7 @@ import { get, sync, call } from 'vuex-pathify'
 
 export default {
     computed: {
-
-        dataServer : sync('general/dataServer'),
+        dataServer : get('general/dataServer'),
         limitRows : sync('general/limitRows'),
         connectionIcon : get ('general/connectionIcon'),
         drawer : sync('general/drawer'),

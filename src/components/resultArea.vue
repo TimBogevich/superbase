@@ -8,31 +8,47 @@
             <v-tab key="1">Result</v-tab>
             <v-tab key="2">Compiled SQL</v-tab>
             <v-tab key="3">Output</v-tab>
+
+
             <v-tab-item key="1">
-                <v-data-table
-                    :headers="headers"
-                    :items="resultTable.data"
-                    :items-per-page="5"
-                    hide-default-footer
-                    disable-pagination
-                ></v-data-table>
-                <mugen-scroll :handler="loadMoreResults" :should-handle="Boolean(this.resultTable.query)"></mugen-scroll>
+              <v-tabs v-model="resultTableTab">
+                <v-tab v-for="(item, index) in resultTable" :key="index">
+                  {{item.query ? `${index+1}. ${item.query.substring(0,20)}` : index}}
+                </v-tab>
+                  <v-tab-item  v-for="(item, index) in resultTable" :key="index">
+                    <div v-if="item.queryType == 'query'">
+                      <v-data-table 
+                          :headers="headers(item.data[0])"
+                          :items="item.data"
+                          :items-per-page="5"
+                          hide-default-footer
+                          disable-pagination
+                      ></v-data-table>
+                      <mugen-scroll :handler="loadMoreResults" :should-handle="Boolean(item.query)"></mugen-scroll>
+                    </div>
+                    <div v-else>
+                      {{item.query}} - {{item.result}}
+                    </div>
+                  </v-tab-item>
+              </v-tabs>
             </v-tab-item>
+
             <v-tab-item key="2">
-                <v-textarea
-                disabled
-                no-resize
-                auto-grow
-                v-model="result"
-                ></v-textarea>
+              <v-textarea
+              disabled
+              no-resize
+              auto-grow
+              v-model="compiled"
+              ></v-textarea>
             </v-tab-item>
-                <v-tab-item key="3">
-                <v-textarea
-                disabled
-                no-resize
-                auto-grow
-                v-model="output"
-                ></v-textarea>
+
+            <v-tab-item key="3">
+              <v-textarea
+              disabled
+              no-resize
+              auto-grow
+              v-model="output"
+              ></v-textarea>
             </v-tab-item>
         </v-tabs>
     </div>
@@ -48,15 +64,16 @@ export default {
     components : {
         MugenScroll
     },
+    data() {
+      return {
+        resultTableTab : 0
+      }
+    },
     computed: {
-        result : function() {
+        compiled() {
             return nunjucks.renderString(this.query,this.schema)
         },
-        headers: function() {
-            return Object.keys(this.resultTable.data[0]).map((item)=> {
-                    return { text: item, value: item }
-                })
-        },
+
         schema : get('general/schema'),
         output : get("general/output"),
         selectedTab: sync("general/selectedTab"),
@@ -70,7 +87,12 @@ export default {
     },
     methods: {
         loadMoreResults() {
-            this.$store.dispatch("general/loadMoreResults")
+            this.$store.dispatch("general/loadMoreResults", this.resultTableTab)
+        },
+        headers(row) {
+          return Object.keys(row).map((item)=> {
+            return { text: item, value: item }
+          })
         },
     }
 }

@@ -87,7 +87,7 @@
                             <v-list-item key="0"  @click="openFile(item)" v-if="item.type=='file'">
                                 <v-list-item-title>Open in editor</v-list-item-title>
                             </v-list-item>
-                            <v-list-item key="1" disabled>
+                            <v-list-item key="1" @click="deleteFile(item)" v-if="item.type=='file'">
                                 <v-list-item-title >Delete</v-list-item-title>
                             </v-list-item>
                             </v-list>
@@ -213,6 +213,9 @@ export default {
         },
         openFile(fileObj) {
             this.$store.dispatch("general/openFile", fileObj)
+        },
+        deleteFile(fileObj) {
+            this.$store.dispatch("general/deleteFile", fileObj)
         },
     },
 }

@@ -1,5 +1,5 @@
 <template>
-    <div  :style="{ height: '400px'}">
+    <div id="codeIditorResizable" >
         <v-tabs append-icon="mdi-plus" v-model="selectedTab">
                 <v-hover v-for="(item, index) in tabsExt" :key="index"
                 v-slot:default="{ hover }"
@@ -111,6 +111,9 @@ export default {
   height: 100%;
 } 
 
+#codeIditorResizable {
+  height: 400px;
+}
 
 .CodeMirror {
     background: transparent !important;

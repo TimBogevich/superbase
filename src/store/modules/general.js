@@ -1,13 +1,11 @@
 import Vue from 'vue'
 import axios from 'axios'
-import { make, set } from 'vuex-pathify'
+import { make, set, dispatch } from 'vuex-pathify'
 
 
 const  state =  {
         drawer: true,
-        resultTable: {"data" : [{" ":"Result will be here"}]},
-        dataServer : "http://localhost:4000",
-        //dataServer : "https://superbase.datamachines.ru",
+        resultTable: [{"data" : [{" ":"Result will be here"}], queryType: "query"}],
         selectedTab : 0,
         tabs: [{query:"select * from employees.employees"}],
         query : "select * from employees.employees",
@@ -64,6 +62,9 @@ const mutations =  {
 }
 
 const getters = {
+    dataServer() {
+      return process.env.DATA_SERVER
+    },
     getMetadata(state) {
         let object =  state.metadata.filter(item => item.connectionName == state.selectedConnection)
         if (object[0]) {
@@ -108,35 +109,35 @@ const actions = {
     async actMetadata({commit,state}) {
         commit('SET_LOAD_METADATA', true)
         let selectedConnection = state.selectedConnection
-        const metadata = await axios.post(state.dataServer +  "/metadataCatalog", {"database":selectedConnection})
+        const metadata = await axios.post(getters.dataServer() +  "/metadataCatalog", {"database":selectedConnection})
         commit('setMetadata', {connectionName : selectedConnection, metadata : metadata.data})
         commit('SET_LOAD_METADATA', false)
 
 
     },
     async reconnectToDatabase({state,commit},connectionName) {
-        const reconnect = await axios.get(state.dataServer + "/connections/reconnect/" + connectionName)
-        const connections = axios.get(state.dataServer + "/connections")
+        const reconnect = await axios.get(getters.dataServer() + "/connections/reconnect/" + connectionName)
+        const connections = axios.get(getters.dataServer() + "/connections")
         .then(result => commit('SET_CONNECTIONS', result.data))
         return connections
     },
     async createConnection({commit}, newConnection){
         commit('SET_MAIN_PROGRESS_BAR', true)
-        const creaConnection = await axios.post(state.dataServer + "/connections/createConnection", newConnection)
-        const connections = await axios.get(state.dataServer + "/connections")
+        const creaConnection = await axios.post(getters.dataServer() + "/connections/createConnection", newConnection)
+        const connections = await axios.get(getters.dataServer() + "/connections")
         commit('SET_CONNECTIONS', connections.data)
         commit('SET_MAIN_PROGRESS_BAR', false)
         return connections
     },
     async disconnectDatabase({state,commit},connectionName) {
-        const reconnect = await axios.get(state.dataServer + "/connections/disconnect/" + connectionName)
-        const connections = axios.get(state.dataServer + "/connections")
+        const reconnect = await axios.get(getters.dataServer() + "/connections/disconnect/" + connectionName)
+        const connections = axios.get(getters.dataServer() + "/connections")
         .then(result => commit('SET_CONNECTIONS', result.data))
         return connections
     },
     async connectToDataServer({commit,state}) {
         commit('SET_CONNECTION_ICON', "mdi-sync-circle")
-        const connections = await axios.get(state.dataServer + "/connections")
+        const connections = await axios.get(getters.dataServer() + "/connections")
         commit('SET_CONNECTIONS', connections.data)
         commit('SET_SELECTED_CONNECTION', connections.data[0].name)
         commit('SET_CONNECTION_ICON', "mdi-check-circle")
@@ -158,7 +159,7 @@ const actions = {
     
     },
     getFiles({commit,state}) {
-        axios.post(state.dataServer +  "/getFiles")
+        axios.post(getters.dataServer() +  "/getFiles")
         .then((result) => state.fileManager.files = result.data )
     },
     async saveFile({commit,state}, {filename,tabIndex}) {
@@ -167,7 +168,7 @@ const actions = {
             filename : filename,
             data : tab.query
         }
-        const saveFile = await axios.post(state.dataServer +  "/saveFile", payload)
+        const saveFile = await axios.post(getters.dataServer() +  "/saveFile", payload)
         commit("SET_FILE_MANAGER_LOADING", false)
         tab.filename = filename 
         tab.edited = false 
@@ -180,9 +181,9 @@ const actions = {
             query: state.tabs[state.selectedTab].query,
             limit: state.limitRows
         }
-        const metadata = axios.post(state.dataServer + "/sql", body)
+        const metadata = axios.post(getters.dataServer() + "/sql", body)
         .then((response) => {
-            commit("SET_RESULT_TABLE", response.data.pop())
+            commit("SET_RESULT_TABLE", response.data)
             commit("SET_QUERY_PROGRESS_BAR", "success")
         })
         .catch((error ) => { 
@@ -194,21 +195,26 @@ const actions = {
 
         return metadata
     },
-    async loadMoreResults({commit,state}) {
+    async loadMoreResults({commit,state}, resultTableTab) {
         var body =  {
-            resultId : state.resultTable.resultId,
+            resultId : state.resultTable[resultTableTab].resultId,
             limit : state.limitRows,
         }
-        const result = await axios.post(state.dataServer + "/sqlScroll", body)
-        state.resultTable.data = state.resultTable.data.concat(result.data.data)
+        const result = await axios.post(getters.dataServer() + "/sqlScroll", body)
+        state.resultTable[resultTableTab].data = state.resultTable[resultTableTab].data.concat(result.data.data)
     },
     async setDefaultCatalog({commit,state}, catalog) {
-        const result = await axios.post(state.dataServer + "/setDefaultCatalog", {database : state.selectedConnection, catalog})
+        const result = await axios.post(getters.dataServer() + "/setDefaultCatalog", {database : state.selectedConnection, catalog})
     },
     async openFile({state,commit}, fileObj) {
-        const file = await axios.post(state.dataServer + "/getOneFile", fileObj)
+        const file = await axios.post(getters.dataServer() + "/getOneFile", fileObj)
         commit("addTab",  file.data)
         commit("SET_SELECTED_TAB", state.tabs.length - 1 )
+    },
+    async deleteFile({state,commit}, fileObj) {
+        const file = await axios.post(getters.dataServer() + "/deleteFile", fileObj)
+        dispatch("general/getFiles")
+
     }
 
 

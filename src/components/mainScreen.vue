@@ -7,7 +7,7 @@
             <multipane layout="horizontal"> 
                   <codeEditor  />
                 <multipane-resizer></multipane-resizer>
-                <v-row>
+                <v-row >
                 <v-col id="BottomPanel" cols="12">
                     <resultArea />
                 </v-col>
