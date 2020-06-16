@@ -35,7 +35,7 @@ import 'codemirror/addon/hint/show-hint';
 import 'codemirror/addon/hint/sql-hint';
 import 'codemirror/addon/hint/anyword-hint';
 import 'codemirror/mode/sql/sql'
-import { get,sync } from 'vuex-pathify'
+import { get,sync} from 'vuex-pathify'
 
 export default {
     data() {
@@ -70,20 +70,15 @@ export default {
         tabs: sync("general/tabs"),
         tabsExt : get("general/tabsExt"),
         query: {
-            get() {
-                return this.tabs[this.selectedTab].query
-            },
-            set(data) {
-                if (data != this.tabs[this.selectedTab].query ) {
-                  this.tabs[this.selectedTab].query = data
-                  this.tabs[this.selectedTab].edited = true
-                }
+            get: get("general/getCurrentQuery"),
+            set(value) {
+              this.$store.commit("general/setCurrentQuery", value)
             }
         }
-            
+        
+           
     },
-    methods: {
-        onCodemirrorReady (cm) {
+    methods: { onCodemirrorReady (cm) {
             cm.on('keypress', () => {
                 cm.showHint({completeSingle:false})
             })

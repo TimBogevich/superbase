@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-navigation-drawer
+        <v-navigation-drawer 
         app
         v-model="drawer"
         clipped
@@ -30,25 +30,57 @@
                 <v-treeview
                 v-if="loadMetadata==false"
                 :open="open"
+                hoverable
                 :items="metadata"
                 item-text="objectName"
-                activatable
-                item-key="objectName"
+                item-key="uid"
                 :load-children="expandMetadataTree"
-                :active.sync="active"
+                :active.sync="leftDrawerCatalogActive"
+                activatable
                 return-object
                 >
-                    <template v-slot:prepend="{ item, open }">
-                    <v-icon v-if="!item.objectType">
-                        {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
-                    </v-icon>
-                    <v-icon v-else>
-                        {{ files[item.objectType] }}
-                    </v-icon>
-                    </template>
-                    <template v-slot:label="{ item }">
-                    <div @click="setNewCatalog(item)">{{item.objectName}}</div>
-                    </template>
+                  <template v-slot:prepend="{ item, open }">
+                  <v-icon v-if="!item.objectType">
+                      {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
+                  </v-icon>
+                  <v-icon v-else>
+                      {{ treeViewIcons[item.objectType] }}
+                  </v-icon>
+                  </template>
+                  <template v-slot:leaf="{ item }">
+                    <span>{{item.objectName}}</span>
+                  </template>
+                  <template  v-slot:append="{ item }">
+                    <v-menu left>
+                        <template v-slot:activator="{ on }">
+                        <v-btn
+                            dark
+                            icon
+                            v-on="on"
+                        >
+                            <v-icon>mdi-dots-vertical</v-icon>
+                        </v-btn>
+                        </template>
+
+                        <v-list v-if="item.menuType == 'selectable'">
+                          <v-list-item @click="generateSelect(item)" key="0" >
+                              <v-list-item-title >SELECT *</v-list-item-title>
+                          </v-list-item>
+                          <v-list-item key="1" disabled>
+                              <v-list-item-title>UPDATE</v-list-item-title>
+                          </v-list-item>
+                          <v-list-item key="1" disabled>
+                              <v-list-item-title>DELETE</v-list-item-title>
+                          </v-list-item>
+                          <v-divider></v-divider>
+                        </v-list>
+                        <v-list v-else-if="item.menuType == 'Catalog'">
+                          <v-list-item @click="setNewCatalog(item)" key="0" >
+                              <v-list-item-title >Set catalog</v-list-item-title>
+                          </v-list-item>
+                        </v-list>
+                    </v-menu>
+                  </template>
                 </v-treeview>
             </div>
 
@@ -68,7 +100,7 @@
                             {{ open ? 'mdi-folder-open' : 'mdi-folder' }}
                         </v-icon>
                         <v-icon v-else>
-                            {{ files[item.type] }}
+                            {{ treeViewIcons[item.type] }}
                         </v-icon>
                     </template>
                     <template  v-slot:append="{ item }">
@@ -161,62 +193,59 @@ export default {
             absolute: false,
             fileNameToSave : "",
             open: [],
-            active: [],
             activeConnection : null,
-            files: {
-                Database: 'mdi-database',
-                "SYSTEM VIEW": 'mdi-view-grid-outline',
-                VIEW: 'mdi-view-grid-outline',
-                TABLE : 'mdi-table',
-                "SYSTEM TABLE" : 'mdi-table',
-                file : 'mdi-file-document',
-                directory : 'mdi-folder-outline',
-            },
         }
     },
     computed: {
-        selectedConnectionObj : get("general/getSelectedConnectionObj"),
-        selectedConnection : sync("general/selectedConnection"),
-        fileManager : get("general/fileManager.files"),
-        connections : sync('general/connections'),
-        metadata: get("general/getMetadata"),
-        createNewConnection : sync("general/createNewConnection"),
-        loadMetadata: get('general/loadMetadata'),
-        drawer : sync('general/drawer'),
-        selectedConnectionManager : sync('general/selectedConnectionManager'),
-        leftDrawerBottom : sync("general/leftDrawerBottom"),
-        saveFileDialog : sync("general/saveFileDialog"),
-        connectionsList() {
-            return this.connections.map((item) => item.name)
-        },
-
-
+      leftDrawerCatalogActive : sync("general/leftDrawerCatalogActive"),
+      treeViewIcons : get("general/treeViewIcons"),
+      selectedConnectionObj : get("general/getSelectedConnectionObj"),
+      selectedConnection : sync("general/selectedConnection"),
+      fileManager : get("general/fileManager.files"),
+      connections : sync('general/connections'),
+      metadata: get("general/getMetadata"),
+      createNewConnection : sync("general/createNewConnection"),
+      loadMetadata: get('general/loadMetadata'),
+      drawer : sync('general/drawer'),
+      selectedConnectionManager : sync('general/selectedConnectionManager'),
+      leftDrawerBottom : sync("general/leftDrawerBottom"),
+      saveFileDialog : sync("general/saveFileDialog"),
+      connectionsList: get("general/getConnectionList"),
+      query: {
+          get: get("general/getCurrentQuery"),
+          set(value) {
+            this.$store.commit("general/setCurrentQuery", value)
+          }
+      }
     },
     methods: {
         updateMetadata() {
-            this.$store.dispatch("general/actMetadata")
+          this.$store.dispatch("general/actMetadata")
         },
         async expandMetadataTree(item) {
-            let metadataItem = {
-                "database": this.selectedConnectionObj.name,
-                "catalog" : item.objectName
-            }
-            const children = await axios.post("http://localhost:4000/metadataObject", metadataItem)
-            this.$store.commit("general/addMetadataChildren", {metadataItem, children})
-            //item.children = metadata.data
+          let metadataItem = {
+              "database": this.selectedConnectionObj.name,
+              "catalog" : item.objectName
+          }
+          const children = await axios.post("http://localhost:4000/metadataObject", metadataItem)
+          this.$store.commit("general/addMetadataChildren", {metadataItem, children})
         },
         setNewCatalog(item) {
-            if (item.objectType == "Database") {
-                this.$store.dispatch("general/setDefaultCatalog", item.objectName)
-                this.catalog = item.objectName
-            }
+          if (item.objectType == "Database") {
+              this.$store.dispatch("general/setDefaultCatalog", item.objectName)
+              this.catalog = item.objectName
+          }
         },
         openFile(fileObj) {
-            this.$store.dispatch("general/openFile", fileObj)
+          this.$store.dispatch("general/openFile", fileObj)
         },
         deleteFile(fileObj) {
-            this.$store.dispatch("general/deleteFile", fileObj)
+          this.$store.dispatch("general/deleteFile", fileObj)
         },
+        generateSelect(item) {
+          this.query = `${this.query} \n\nSELECT * FROM ${item.catalog}.${item.objectName};`
+          console.log(item)
+        }
     },
 }
 </script>
@@ -226,4 +255,9 @@ export default {
 .v-text-field__details {
   display: none;
 }
+
+.v-treeview-node {
+  cursor : pointer;
+}
 </style>
+

@@ -7,16 +7,16 @@
             <v-toolbar-title>SQL editor </v-toolbar-title>
             <v-btn class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
             <v-spacer class="d-none d-sm-flex d-xs-flex"></v-spacer>
-            <v-col cols="1">
-                <v-text-field
-                class="d-none d-sm-flex d-xs-flex"
-                type="number"
-                v-model="limitRows"
-                label="Limit rows"
-                filled
-                placeholder="Limit rows"
-                ></v-text-field>
-            </v-col>
+            <v-flex xs1>
+              <v-text-field
+              class="d-none d-sm-flex d-xs-flex"
+              type="number"
+              v-model="limitRows"
+              label="Limit rows"
+              filled
+              placeholder="Limit rows"
+              ></v-text-field>
+            </v-flex>
             <v-tooltip>
                 <template v-slot:activator="{ on }">
                   <v-btn icon v-on="on">
@@ -37,6 +37,7 @@ export default {
     computed: {
         dataServer : get('general/dataServer'),
         limitRows : sync('general/limitRows'),
+        batchSize : sync('general/batchSize'),
         connectionIcon : get ('general/connectionIcon'),
         drawer : sync('general/drawer'),
         showFileManager: sync("general/showFileManager"),

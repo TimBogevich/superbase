@@ -8,7 +8,6 @@ const  state =  {
         resultTable: null,
         selectedTab : 0,
         tabs: [{query:"select * from employees.employees"}],
-        query : "select * from employees.employees",
         connections : [],
         connectionIcon: "",
         selectedConnection: null,
@@ -16,7 +15,8 @@ const  state =  {
         createNewConnection : false,
         queryProgressBar:false,
         mainProgressBar:false,
-        limitRows:50,
+        limitRows:200,
+        batchSize:50,
         output: "",
         showFileManager: false,
         fileManagerLoading: false,
@@ -27,12 +27,28 @@ const  state =  {
         metadata : [],
         leftDrawerBottom: 0,
         loadMetadata: false,
-        schema:{}
+        leftDrawerCatalogActive : [],
+        schema:{},
+        treeViewIcons : {
+          Database: 'mdi-database',
+          "SYSTEM VIEW": 'mdi-view-grid-outline',
+          VIEW: 'mdi-view-grid-outline',
+          TABLE : 'mdi-table',
+          "SYSTEM TABLE" : 'mdi-table',
+          file : 'mdi-file-document',
+          directory : 'mdi-folder-outline',
+      },
     }
 
 const mutations =  {
   closeTab(state, index) {
     state.tabs.splice(index, 1)
+  },
+  setCurrentQuery(state, data) {
+    if (data != state.tabs[state.selectedTab].query ) {
+      state.tabs[state.selectedTab].query = data
+      state.tabs[state.selectedTab].edited = true
+    }
   },
   addTab(state, payload) {
     if (payload) {
@@ -64,6 +80,9 @@ const mutations =  {
 const getters = {
     dataServer() {
       return process.env.DATA_SERVER
+    },
+    getCurrentQuery(state) {
+      return state.tabs[state.selectedTab].query
     },
     getMetadata(state) {
         let object =  state.metadata.filter(item => item.connectionName == state.selectedConnection)
@@ -102,7 +121,10 @@ const getters = {
     },
     getSelectedConnectionObj(state) {
         return state.connections.find(item => item.name == state.selectedConnection)
-    }
+    },
+    getConnectionList(state) {
+      return state.connections.map((item) => item.name)
+    },
 }
 
 const actions = {
@@ -179,7 +201,8 @@ const actions = {
         var body =  {
             database: state.selectedConnection,
             query: state.tabs[state.selectedTab].query,
-            limit: state.limitRows
+            limit: state.limitRows,
+            batchSize: state.batchSize,
         }
         const metadata = axios.post(getters.dataServer() + "/sql", body)
         .then((response) => {
@@ -198,7 +221,7 @@ const actions = {
     async loadMoreResults({commit,state}, resultTableTab) {
         var body =  {
             resultId : state.resultTable[resultTableTab].resultId,
-            limit : state.limitRows,
+            batchSize : state.batchSize,
         }
         const result = await axios.post(getters.dataServer() + "/sqlScroll", body)
         state.resultTable[resultTableTab].data = state.resultTable[resultTableTab].data.concat(result.data.data)
