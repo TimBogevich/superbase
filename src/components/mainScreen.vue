@@ -54,11 +54,11 @@ export default {
 
 <style >
 #codeEditor {
-  padding: 0px;
-  padding-left: 12px;
+  padding: 0px !important;
+  padding-left: 12px !important;
 }
 #BottomPanel {
-  padding: 0px;
-  padding-left: 12px;
+  padding: 0px !important;
+  padding-left: 12px !important;
 }
 </style>

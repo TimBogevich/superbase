@@ -102,8 +102,8 @@ export default {
 
 <style>
   .vue-codemirror {
-  width: auto;
-  height: 100%;
+  width: auto !important;
+  height: 100% !important;
 } 
 
 #codeIditorResizable {
@@ -112,6 +112,6 @@ export default {
 
 .CodeMirror {
     background: transparent !important;
-    height: 100%;
+    height: 100% !important;
 }
 </style>

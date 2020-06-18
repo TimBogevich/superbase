@@ -32,7 +32,7 @@
                           hide-default-footer
                           disable-pagination
                       ></v-data-table>
-                      <mugen-scroll :handler="loadMoreResults" :should-handle="Boolean(item.query)"></mugen-scroll>
+                      <mugen-scroll :handler="loadMoreResults" :should-handle="Boolean(!item.endCursor)"></mugen-scroll>
                     </div>
                     <div v-else>
                       {{item.query}} - {{item.result}}

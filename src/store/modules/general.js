@@ -225,6 +225,7 @@ const actions = {
         }
         const result = await axios.post(getters.dataServer() + "/sqlScroll", body)
         state.resultTable[resultTableTab].data = state.resultTable[resultTableTab].data.concat(result.data.data)
+        state.resultTable[resultTableTab].endCursor = result.data.endCursor
     },
     async setDefaultCatalog({commit,state}, catalog) {
         const result = await axios.post(getters.dataServer() + "/setDefaultCatalog", {database : state.selectedConnection, catalog})
