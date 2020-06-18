@@ -34,6 +34,7 @@ const  state =  {
           "SYSTEM VIEW": 'mdi-view-grid-outline',
           VIEW: 'mdi-view-grid-outline',
           TABLE : 'mdi-table',
+          PROCEDURE : 'mdi-script-text-outline',
           "SYSTEM TABLE" : 'mdi-table',
           file : 'mdi-file-document',
           directory : 'mdi-folder-outline',

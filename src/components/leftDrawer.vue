@@ -4,7 +4,7 @@
       <v-flex fill-height flex-direction: row class="ma-0">
         <v-flex xs2 justify="center" id="mini-drawer">
           <v-list>
-            <v-list-item-group v-model="leftDrawerBottom" color="primary">
+            <v-list-item-group v-model="leftDrawerBottom" mandatory color="primary">
               <v-list-item key="1">
                 <v-list-item-icon>
                   <v-icon>mdi-database</v-icon>
