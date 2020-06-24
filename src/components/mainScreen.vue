@@ -19,6 +19,9 @@
         <div v-if="leftDrawerBottom==2">
             <connectionManager absolute />
         </div>
+        <div v-if="leftDrawerBottom==3">
+            <jobRunner absolute />
+        </div>
     </v-content>
     
 
@@ -32,6 +35,7 @@ import appBar from "./appBar";
 import resultArea from "./resultArea";
 import fileSaver from "./fileSaver";
 import connectionManager from "./connectionManager";
+import jobRunner from "./jobRunner";
 import { Multipane, MultipaneResizer } from "vue-multipane";
 import { sync } from 'vuex-pathify'
 
@@ -44,7 +48,8 @@ export default {
     fileSaver,
     Multipane,
     MultipaneResizer,
-    connectionManager
+    connectionManager,
+    jobRunner,
   },
   computed: {
       leftDrawerBottom : sync("general/leftDrawerBottom"),

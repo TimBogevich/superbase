@@ -5,7 +5,7 @@
         clipped-left>
             <v-app-bar-nav-icon @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
             <v-toolbar-title>Superbase </v-toolbar-title>
-            <v-btn class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
+            <v-btn v-if="leftDrawerBottom==0" class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
             <v-spacer class="d-none d-sm-flex d-xs-flex"></v-spacer>
             <v-flex xs1>
               <v-text-field
@@ -35,12 +35,13 @@ import { get, sync, call } from 'vuex-pathify'
 
 export default {
     computed: {
-        dataServer : get('general/dataServer'),
-        limitRows : sync('general/limitRows'),
-        batchSize : sync('general/batchSize'),
-        connectionIcon : get ('general/connectionIcon'),
-        drawer : sync('general/drawer'),
-        showFileManager: sync("general/showFileManager"),
+      leftDrawerBottom: sync("general/leftDrawerBottom"),
+      dataServer : get('general/dataServer'),
+      limitRows : sync('general/limitRows'),
+      batchSize : sync('general/batchSize'),
+      connectionIcon : get ('general/connectionIcon'),
+      drawer : sync('general/drawer'),
+      showFileManager: sync("general/showFileManager"),
     },
     methods: {
         sendSQL() {

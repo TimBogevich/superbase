@@ -25,6 +25,12 @@
                 </v-list-item-icon>
                 <v-list-item-title></v-list-item-title>
               </v-list-item>
+              <v-list-item key="4">
+                <v-list-item-icon>
+                  <v-icon>mdi-timetable</v-icon>
+                </v-list-item-icon>
+                <v-list-item-title></v-list-item-title>
+              </v-list-item>
             </v-list-item-group>
           </v-list>
         </v-flex>
@@ -79,10 +85,10 @@
                     <v-list-item @click="generateSelect(item)" key="0">
                       <v-list-item-title>SELECT *</v-list-item-title>
                     </v-list-item>
-                    <v-list-item key="1" disabled>
+                    <v-list-item @click="generateUpdate(item)" key="1">
                       <v-list-item-title>UPDATE</v-list-item-title>
                     </v-list-item>
-                    <v-list-item key="1" disabled>
+                    <v-list-item @click="generateDelete(item)" key="2">
                       <v-list-item-title>DELETE</v-list-item-title>
                     </v-list-item>
                     <v-divider></v-divider>
@@ -149,8 +155,56 @@
             </v-treeview>
             <v-btn @click="createNewConnection=true" block>+</v-btn>
           </div>
+
+          
+          <div v-if="leftDrawerBottom==3">
+            <v-simple-table>
+              <template v-slot:default>
+                <thead>
+                  <tr>
+                    <th class="text-left">Job Name</th>
+                  </tr>
+                </thead>
+              </template>
+            </v-simple-table>
+            <v-treeview
+              v-if="loadMetadata==false"
+              :open="open"
+              :items="jobs"
+              hoverable
+              item-text="jobname"
+              item-key="jobid"
+              return-object
+            >
+              <template v-slot:prepend="{ item, open }">
+                <v-icon v-if="!item.type">{{ open ? 'mdi-run' : 'mdi-run' }}</v-icon>
+                <v-icon v-else>{{ treeViewIcons[item.type] }}</v-icon>
+              </template>
+              <template v-slot:append="{ item }">
+                <v-menu left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn dark icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+
+                  <v-list>
+                    <v-list-item key="0" @click="jobPropertiesDialog=true">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
+            </v-treeview>
+          </div>
+
+
         </v-flex>
       </v-flex>
+
+
+
+
       <template v-slot:append>
         <v-flex flex-direction: row xs12 class="ma-0">
           <v-flex xs2  class="pl-5 pt-3">
@@ -192,10 +246,13 @@ export default {
       absolute: false,
       fileNameToSave: "",
       open: [],
-      activeConnection: null
     };
   },
   computed: {
+    jobs : sync('jobRunner/jobs'),
+    jobPropertiesDialog : sync("jobRunner/jobPropertiesDialog"),
+    dataServer : get('general/dataServer'),
+    codeEditorDevider: sync("general/codeEditorDevider"),
     leftDrawerCatalogActive: sync("general/leftDrawerCatalogActive"),
     treeViewIcons: get("general/treeViewIcons"),
     selectedConnectionObj: get("general/getSelectedConnectionObj"),
@@ -227,7 +284,7 @@ export default {
         catalog: item.objectName
       };
       const children = await axios.post(
-        "http://localhost:4000/metadataObject",
+        `${this.dataServer}/metadataObject`,
         metadataItem
       );
       this.$store.commit("general/addMetadataChildren", {
@@ -248,9 +305,16 @@ export default {
       this.$store.dispatch("general/deleteFile", fileObj);
     },
     generateSelect(item) {
-      this.query = `${this.query} \n\nSELECT * FROM ${item.catalog}.${item.objectName};`;
-      console.log(item);
-    }
+      this.query = `${this.query} \nSELECT * FROM ${item.catalog}.${item.objectName}${this.codeEditorDevider}`;
+    },
+    generateUpdate(item) {
+      let columns = item.columns.map(col => col.columnName)
+      columns = columns.join(" = 'value',\n") + " = 'value'"
+      this.query = `${this.query} \nUPDATE ${item.catalog}.${item.objectName} \nSET ${columns}${this.codeEditorDevider}`;
+    },
+    generateDelete(item) {
+      this.query = `${this.query} \nDELETE FROM ${item.catalog}.${item.objectName}${this.codeEditorDevider}`;
+    },
   }
 };
 </script>

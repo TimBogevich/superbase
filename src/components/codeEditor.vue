@@ -22,6 +22,7 @@
         </v-tabs>
         <codemirror 
         v-model="query" 
+        ref="codemirror"
         @ready="onCodemirrorReady"
         :options="cmOptions" />
     </div>
@@ -63,6 +64,7 @@ export default {
             }
         },
         selectedTab: sync("general/selectedTab"),
+        codeEditorDevider: sync("general/codeEditorDevider"),
         showFileSaver: sync("general/showFileManager"),
         saveFileDialog : sync("general/saveFileDialog"),
         tabForSaveOrClose : sync("general/tabForSaveOrClose"),
@@ -74,27 +76,64 @@ export default {
             set(value) {
               this.$store.commit("general/setCurrentQuery", value)
             }
+        },
+        codemirror() {
+          return this.$refs.codemirror
+        },
+        markedText() {
+          let marks = this.$refs.codemirror.codemirror.doc.getAllMarks().pop()
+          if (marks) {
+            return marks.lines.map(item => item.text).join("\n")
+          }
         }
-        
-           
+
     },
-    methods: { onCodemirrorReady (cm) {
-            cm.on('keypress', () => {
-                cm.showHint({completeSingle:false})
-            })
-        },
-        addTab() {
-            this.$store.dispatch("general/addNewTab")
-        },
-        closeOrSaveTab(item) {
-          if (this.tabs[item].edited) {
-            this.tabForSaveOrClose = item
-            this.showFileSaver = true
-          }
-          else{
-            this.$store.dispatch("general/closeTab", item)
-          }
-        },
+    methods: { 
+      onCodemirrorReady (cm) {
+         cm.on('cursorActivity', () => {
+          cm.eachLine((line) => {
+            cm.removeLineClass(line.lineNo(), null, "selectedLine")
+          })
+          var devider = this.codeEditorDevider
+          var line = cm.getCursor().line
+          var ch = cm.getCursor().ch
+
+          // clear marked text
+          //cm.doc.getAllMarks().forEach(marker => marker.clear())
+
+          let text = cm.doc.getValue()
+          debugger
+          let cursorIndex = cm.doc.indexFromPos({line, ch})
+          let startIndex = text.lastIndexOf(devider, cursorIndex -1) 
+          startIndex = startIndex === -1 ? 0 : startIndex + devider.length
+          let endIndex = text.indexOf(devider, cursorIndex)
+          endIndex = endIndex === -1 ? text.length : endIndex
+
+          let startPosition = cm.doc.posFromIndex(startIndex)
+          let endPosition = cm.doc.posFromIndex(endIndex)
+          for (let i = startPosition.line; i <= endPosition.line; i++) {
+            cm.addLineClass(i, null, "selectedLine");
+            
+          } 
+          //cm.markText( startPosition, endPosition, {className : "markedText"}) 
+
+        })
+        cm.on('keypress', () => {
+          cm.showHint({completeSingle:false})
+        })
+      },
+      addTab() {
+          this.$store.dispatch("general/addNewTab")
+      },
+      closeOrSaveTab(item) {
+        if (this.tabs[item].edited) {
+          this.tabForSaveOrClose = item
+          this.showFileSaver = true
+        }
+        else{
+          this.$store.dispatch("general/closeTab", item)
+        }
+      },
     },
 }
 </script>
@@ -113,5 +152,13 @@ export default {
 .CodeMirror {
     background: transparent !important;
     height: 100% !important;
+}
+
+.selectedLine {
+  background-color: rgba(61, 61, 61, 0.884);
+}
+
+.markedText {
+  background-color: rgba(44, 72, 116, 0.884);
 }
 </style>
