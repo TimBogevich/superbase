@@ -18,6 +18,7 @@ Vue.use(Vuetify)
 Vue.use(VueAxios, axios)
 Vue.use(VueCodemirror)
 
+
 Vue.axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 Vue.axios.defaults.headers.common['Content-Type'] = 'application/json';   
 

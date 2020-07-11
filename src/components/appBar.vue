@@ -7,7 +7,7 @@
             <v-toolbar-title>Superbase </v-toolbar-title>
             <v-btn v-if="leftDrawerBottom==0" class="ml-5"  color="success" v-on:click="sendSQL">Run</v-btn>
             <v-spacer class="d-none d-sm-flex d-xs-flex"></v-spacer>
-            <v-flex xs1>
+            <v-flex xs1 v-if="leftDrawerBottom==0">
               <v-text-field
               class="d-none d-sm-flex d-xs-flex"
               type="number"

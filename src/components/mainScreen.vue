@@ -19,9 +19,9 @@
         <div v-if="leftDrawerBottom==2">
             <connectionManager absolute />
         </div>
-        <div v-if="leftDrawerBottom==3">
+        <v-flex fill-height v-if="leftDrawerBottom==3">
             <jobRunner absolute />
-        </div>
+        </v-flex>
     </v-content>
     
 

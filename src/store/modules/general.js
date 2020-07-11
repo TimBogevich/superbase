@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import { make, set, dispatch } from 'vuex-pathify'
-
+import moment from 'moment'
 
 const  state =  {
         drawer: true,
@@ -29,6 +29,10 @@ const  state =  {
         loadMetadata: false,
         leftDrawerCatalogActive : [],
         schema:{},
+        queryHistory : [
+          {id : 1, text : "select * from employess", date : "2020-02-20"},
+          {id : 2, text : "select * from test", date : "2020-02-20"},
+        ],
         treeViewIcons : {
           Database: 'mdi-database',
           "SYSTEM VIEW": 'mdi-view-grid-outline',
@@ -38,7 +42,9 @@ const  state =  {
           "SYSTEM TABLE" : 'mdi-table',
           file : 'mdi-file-document',
           directory : 'mdi-folder-outline',
+          job : 'mdi-run',
       },
+      codeEditorDevider : ";\n"
     }
 
 const mutations =  {
@@ -79,6 +85,16 @@ const mutations =  {
 }
 
 const getters = {
+  convertDate() {
+    return (value, format) => {
+      if(value) {
+        return moment(value).format(format)
+      }
+      else {
+        return "-"
+      }
+    }
+  },
     dataServer() {
       return process.env.DATA_SERVER
     },

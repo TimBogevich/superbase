@@ -32,6 +32,7 @@
                           :items-per-page="5"
                           hide-default-footer
                           disable-pagination
+                          dense
                       ></v-data-table>
                       <mugen-scroll :handler="loadMoreResults" :should-handle="Boolean(!item.endCursor)"></mugen-scroll>
                     </div>
@@ -77,6 +78,7 @@
                 hide-default-footer
                 :search="queryHistorySearch"
                 item-key="id"
+                dense
               >
                 <template v-slot:item.add="{ item }">
                     <v-chip @click="pasteFromHistory(item.text)">
@@ -91,7 +93,7 @@
             </v-tab-item>
 
             <v-tab-item v-if="leftDrawerCatalogActive.length > 0" key="4">
-                <v-simple-table>
+                <v-simple-table dense>
                   <tbody>
                     <tr>
                       <td>Object type</td>

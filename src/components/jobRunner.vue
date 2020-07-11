@@ -1,78 +1,117 @@
 <template>
   <div>
-    <v-simple-table>
-      <template v-slot:default>
-        <thead>
-          <tr>
-            <th class="text-left">Job Id</th>
-            <th class="text-left">Cron pattern</th>
-            <th class="text-left">Command</th>
-            <th class="text-left">Status</th>
-            <th class="text-left">Created</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in jobs" :key="item.jobid">
-            <td>{{ item.jobid }}</td>
-            <td>{{ item.pattern }}</td>
-            <td>{{ item.command }}</td>
-            <td>{{ item.status }}</td>
-            <td>{{ item.createdt }}</td>
-          </tr>
-        </tbody>
-      </template>
-    </v-simple-table>
+    <multipane layout="horizontal">
+      <div :style="{ height: '70%', maxHeight: '70%' }">
+        <v-data-table
+          :headers="jobHeader"
+          :items="jobs"
+          item-key="jobid"
+          disable-sort
+          hide-default-footer
+          dense
+        ></v-data-table>
+      </div>
 
-    <v-dialog
-      v-model="jobPropertiesDialog"
-      scrollable 
-      :overlay="false"
-      max-width="500px"
-      transition="dialog-transition"
-    >
-      <v-card>
-        <v-card-title primary-title>
-          Edit job
-        </v-card-title>
-        <v-card-text>
-          <v-text-field
-            name="name"
-            label="label"
-            id="id"
-          ></v-text-field>
-        </v-card-text>
-      </v-card>
-    </v-dialog>
+      <multipane-resizer></multipane-resizer>
+      <div :style="{ height: '300px', maxHeight: '300px' }">
+        <v-sheet
+          v-if="Object.keys(selectedJob) != 0"
+          class="scrollableContainer"
+          height="300px"
+          width="100%"
+        >
+          <v-progress-linear color="yellow darken-2"></v-progress-linear>
+          <v-data-table 
+          :headers="jobHistoryHeader"
+          :sort-by="['start_dt']"
+          sort-desc
+          :items="selectedJob.jobshistories">
+            <template v-slot:item.end_dt="{ item }">
+              {{ convertDate(item.end_dt, 'DD.MM.YYYY HH:mm') }}
+            </template>
+            <template v-slot:item.start_dt="{ item }">
+              {{ convertDate(item.start_dt, 'DD.MM.YYYY HH:mm') }}
+            </template>
+          </v-data-table>
+        </v-sheet>
+      </div>
 
+      <v-dialog
+        v-model="jobPropertiesDialog"
+        scrollable
+        :overlay="false"
+        max-width="500px"
+        transition="dialog-transition"
+      >
+        <v-card>
+          <v-card-title primary-title>Edit job</v-card-title>
+          <v-card-text>
+            <v-text-field name="name" label="label" id="id"></v-text-field>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
+    </multipane>
   </div>
 </template>
 
 
 <script>
-import { get, sync} from "vuex-pathify";
+import { get, sync } from "vuex-pathify";
+import { Multipane, MultipaneResizer } from "vue-multipane";
 
 
 export default {
-
+  components: {
+    Multipane,
+    MultipaneResizer
+  },
   data() {
     return {
-      header : [
-        {text : "Job Id", value : "jobid"},
-        {text : "Start datetime", value : "start_dt"},
-        {text : "End datetime", value : "end_dt"},
-        {text : "Command", value : "command"},
-        {text : "Status", value : "status"},
+      jobHistoryBottom: false,
+      jobHeader: [
+        { text: "Job Id", value: "jobid" },
+        { text: "Pattern", value: "pattern" },
+        { text: "Command", value: "command" },
+        { text: "Start", value: "start_dt" },
+        { text: "End", value: "end_dt" },
+        { text: "Status", value: "status" }
+      ],
+      jobHistoryHeader: [
+        { text: "Job Id", value: "jobid" },
+        { text: "Run Id", value: "runid" },
+        { text: "Pattern", value: "pattern" },
+        { text: "Command", value: "command" },
+        { text: "Start", value: "start_dt" },
+        { text: "End", value: "end_dt" },
+        { text: "Status", value: "status" }
       ]
+    };
+  },
+  watch: {
+    selectedJob(newSelectedJob) {
+      this.jobHistoryBottom =
+        Object.keys(newSelectedJob).length > 0 ? true : false;
     }
   },
+  methods: {
+  },
   computed: {
-    jobs : sync("jobRunner/jobs"),
-    jobsHistory : sync("jobRunner/jobsHistory"),
-    jobPropertiesDialog : sync("jobRunner/jobPropertiesDialog")
+    jobs: get("jobRunner/jobs"),
+    jobPropertiesDialog: sync("jobRunner/jobPropertiesDialog"),
+    selectedJob: get("jobRunner/selectedJob"),
+    jobLoaderById: get("jobRunner/jobLoaderById"),
+    convertDate: get("general/convertDate"),
   },
   created: async function() {
-    const history = await this.$store.dispatch("jobRunner/getJobsHistory")
+    const jobs = this.$store.dispatch("jobRunner/getJobs");
   }
+};
+</script>
+
+<style>
+.scrollableContainer {
+  overflow: auto;
 }
 
-</script>
+
+</style>

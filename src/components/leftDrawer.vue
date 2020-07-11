@@ -58,6 +58,7 @@
               v-if="loadMetadata==false"
               :open="open"
               hoverable
+              dense
               :items="metadata"
               item-text="objectName"
               item-key="uid"
@@ -108,6 +109,7 @@
             <v-treeview
               v-if="loadMetadata==false"
               :open="open"
+              dense
               :items="fileManager.children"
               item-text="name"
               item-key="objectName"
@@ -142,6 +144,7 @@
             <v-treeview
               :items="connections"
               activatable
+              dense
               item-key="name"
               :active.sync="selectedConnectionManager"
               return-object
@@ -158,44 +161,49 @@
 
           
           <div v-if="leftDrawerBottom==3">
-            <v-simple-table>
-              <template v-slot:default>
-                <thead>
-                  <tr>
-                    <th class="text-left">Job Name</th>
-                  </tr>
-                </thead>
-              </template>
-            </v-simple-table>
-            <v-treeview
-              v-if="loadMetadata==false"
-              :open="open"
-              :items="jobs"
-              hoverable
-              item-text="jobname"
-              item-key="jobid"
-              return-object
+            <v-data-table
+            class="transparentTable"
+            :headers='[{text : "Job Name", value : "name"}]'
+            :items="jobs"
+            :value="[selectedJob]"
+            item-key="jobid"
+            dense
+            disable-sort
+            hide-default-footer
+            @click:row="selectJob"
             >
-              <template v-slot:prepend="{ item, open }">
-                <v-icon v-if="!item.type">{{ open ? 'mdi-run' : 'mdi-run' }}</v-icon>
-                <v-icon v-else>{{ treeViewIcons[item.type] }}</v-icon>
-              </template>
-              <template v-slot:append="{ item }">
-                <v-menu left>
-                  <template v-slot:activator="{ on }">
-                    <v-btn dark icon v-on="on">
-                      <v-icon>mdi-dots-vertical</v-icon>
-                    </v-btn>
-                  </template>
+              <template v-slot:item.name="{ item }">
+                <a>
+                  <v-row align-content="center">
+                    {{item.name}}
+                    <v-spacer></v-spacer>
+                    <v-progress-circular 
+                    class="mr-1"
+                    v-if="jobLoaderById.indexOf(item.jobid) >= 0"
+                    indeterminate
+                    :size="25"
+                    color="primary"
+                    ></v-progress-circular>
+                    <v-menu left v-else>
+                      <template v-slot:activator="{ on }">
+                        <v-btn small dark icon v-on="on">
+                          <v-icon>mdi-dots-vertical</v-icon>
+                        </v-btn>
+                      </template>
 
-                  <v-list>
-                    <v-list-item key="0" @click="jobPropertiesDialog=true">
-                      <v-list-item-title>Edit</v-list-item-title>
-                    </v-list-item>
-                  </v-list>
-                </v-menu>
+                      <v-list>
+                        <v-list-item key="0" @click="jobPropertiesDialog=true">
+                          <v-list-item-title>Edit</v-list-item-title>
+                        </v-list-item>
+                        <v-list-item key="1" @click="jobRun(item.jobid)">
+                          <v-list-item-title>Run manual</v-list-item-title>
+                        </v-list-item>
+                      </v-list>
+                    </v-menu>
+                  </v-row>
+                </a>
               </template>
-            </v-treeview>
+            </v-data-table>
           </div>
 
 
@@ -213,7 +221,7 @@
 
           <v-flex>
             <v-bottom-navigation grow color="teal">
-              <v-btn disabled>
+              <v-btn @click="refresh()">
                 <span>Refresh</span>
                 <v-icon>mdi-refresh</v-icon>
               </v-btn>
@@ -250,7 +258,10 @@ export default {
   },
   computed: {
     jobs : sync('jobRunner/jobs'),
+    selectedJob : get('jobRunner/selectedJob'),
+    selectedJobId : sync('jobRunner/selectedJobId'),
     jobPropertiesDialog : sync("jobRunner/jobPropertiesDialog"),
+    jobLoaderById : sync('jobRunner/jobLoaderById'),
     dataServer : get('general/dataServer'),
     codeEditorDevider: sync("general/codeEditorDevider"),
     leftDrawerCatalogActive: sync("general/leftDrawerCatalogActive"),
@@ -275,6 +286,22 @@ export default {
     }
   },
   methods: {
+    async jobRun(jobid) {
+      const result = await axios.post(`${this.dataServer}/jobs/${jobid}`,{operation : "run"});
+    },
+    selectJob(value) {
+      if(this.selectedJobId && this.selectedJobId == value.jobid) {
+        this.selectedJobId = null
+      }
+      else {
+        this.selectedJobId = value.jobid
+      }
+    },
+    refresh() {
+      if (this.leftDrawerBottom==3) {
+        const jobs = this.$store.dispatch("jobRunner/getJobs")
+      }
+    },
     updateMetadata() {
       this.$store.dispatch("general/actMetadata");
     },
@@ -347,6 +374,9 @@ export default {
   border-radius: 20px;
 }
 
+.transparentTable {
+   background-color: transparent !important;
+}
 
 </style>
 

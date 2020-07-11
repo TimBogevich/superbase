@@ -102,7 +102,6 @@ export default {
           //cm.doc.getAllMarks().forEach(marker => marker.clear())
 
           let text = cm.doc.getValue()
-          debugger
           let cursorIndex = cm.doc.indexFromPos({line, ch})
           let startIndex = text.lastIndexOf(devider, cursorIndex -1) 
           startIndex = startIndex === -1 ? 0 : startIndex + devider.length
