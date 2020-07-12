@@ -366,11 +366,13 @@ export default {
   },
   methods: {
     ...mapActions('general', [ 
-      'disconnectDatabase', 
-      'reconnectToDatabase',  
       'openFile',  
       'deleteFile',  
       'actMetadata',  
+    ]),
+    ...mapActions('connection', [ 
+      'disconnectDatabase', 
+      'reconnectToDatabase',
     ]),
     async jobRun(jobid) {
       const result = await axios.post(`${this.dataServer}/jobs/${jobid}`,{operation : "run"});

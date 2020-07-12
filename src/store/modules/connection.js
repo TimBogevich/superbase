@@ -31,7 +31,25 @@ const actions = {
     commit('SET_SELECTED_CONNECTION', connections.data[0].name)
     commit('SET_CONNECTION_ICON', "mdi-check-circle")
     return connections
-},
+  },
+  async reconnectToDatabase({state,commit},connectionName) {
+    const reconnect = await axios.get(getters.dataServer() + "/connections/reconnect/" + connectionName)
+    const connections = axios.get(getters.dataServer() + "/connections")
+    .then(result => commit('SET_CONNECTIONS', result.data))
+    return connections
+  },
+  async createConnection({commit}, newConnection){
+      const creaConnection = await axios.post(getters.dataServer() + "/connections/createConnection", newConnection)
+      const connections = await axios.get(getters.dataServer() + "/connections")
+      commit('SET_CONNECTIONS', connections.data)
+      return connections
+  },
+  async disconnectDatabase({commit},connectionName) {
+      const reconnect = await axios.get(getters.dataServer() + "/connections/disconnect/" + connectionName)
+      const connections = axios.get(getters.dataServer() + "/connections")
+      .then(result => commit('SET_CONNECTIONS', result.data))
+      return connections
+  },
 
 }
 

@@ -145,26 +145,6 @@ const actions = {
 
 
     },
-    async reconnectToDatabase({state,commit},connectionName) {
-        const reconnect = await axios.get(getters.dataServer() + "/connections/reconnect/" + connectionName)
-        const connections = axios.get(getters.dataServer() + "/connections")
-        .then(result => commit('SET_CONNECTIONS', result.data))
-        return connections
-    },
-    async createConnection({commit}, newConnection){
-        commit('SET_MAIN_PROGRESS_BAR', true)
-        const creaConnection = await axios.post(getters.dataServer() + "/connections/createConnection", newConnection)
-        const connections = await axios.get(getters.dataServer() + "/connections")
-        commit('SET_CONNECTIONS', connections.data)
-        commit('SET_MAIN_PROGRESS_BAR', false)
-        return connections
-    },
-    async disconnectDatabase({state,commit},connectionName) {
-        const reconnect = await axios.get(getters.dataServer() + "/connections/disconnect/" + connectionName)
-        const connections = axios.get(getters.dataServer() + "/connections")
-        .then(result => commit('SET_CONNECTIONS', result.data))
-        return connections
-    },
 
     addNewTab({commit,state}) {
         commit("addTab")
