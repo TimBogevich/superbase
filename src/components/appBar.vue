@@ -39,7 +39,7 @@ export default {
       dataServer : get('general/dataServer'),
       limitRows : sync('general/limitRows'),
       batchSize : sync('general/batchSize'),
-      connectionIcon : get ('general/connectionIcon'),
+      connectionIcon : get ('connection/connectionIcon'),
       drawer : sync('general/drawer'),
       showFileManager: sync("general/showFileManager"),
     },

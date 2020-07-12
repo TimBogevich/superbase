@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import general from './modules/general'
 import jobRunner from './modules/jobRunner'
+import connection from './modules/connection'
 import pathify from 'vuex-pathify'
 import createPersistedState from "vuex-persistedstate";
 
@@ -23,6 +24,7 @@ export default new Vuex.Store ({
     modules: {
         general,
         jobRunner,
+        connection,
     },
 
 })

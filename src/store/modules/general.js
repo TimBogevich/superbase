@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import axios from 'axios'
-import { make, set, dispatch } from 'vuex-pathify'
+import { make, set, dispatch, get } from 'vuex-pathify'
 import moment from 'moment'
 
 const  state =  {
@@ -8,11 +8,6 @@ const  state =  {
         resultTable: null,
         selectedTab : 0,
         tabs: [{query:"select * from employees.employees"}],
-        connections : [],
-        connectionIcon: "",
-        selectedConnection: null,
-        selectedConnectionManager : [],
-        createNewConnection : false,
         queryProgressBar:false,
         mainProgressBar:false,
         limitRows:200,
@@ -70,8 +65,8 @@ const mutations =  {
       const catalog = metadataObj.find(item => item.objectName == metadataItem.catalog)
       catalog.children = children.data
   },
-  setCatalog(state, catalog) {
-      let selectedConnection = state.connections.filter(item => item.name == state.selectedConnection)[0]
+  setCatalog({state, rootState}, catalog) {
+      let selectedConnection = state.connections.filter(item => item.name == rootState.connection.selectedConnection)[0]
       selectedConnection.catalog = catalog
   },
   setMetadata(state, payload) {
@@ -101,14 +96,16 @@ const getters = {
     getCurrentQuery(state) {
       return state.tabs[state.selectedTab].query
     },
-    getMetadata(state) {
-        let object =  state.metadata.filter(item => item.connectionName == state.selectedConnection)
-        if (object[0]) {
-            return object[0].metadata
-        }
-        else {
-            return []
-        }
+    getMetadata(state, getters, rootState) {
+      let object =  state.metadata.find(item => 
+        item.connectionName == rootState.connection.selectedConnection
+      )
+      if (object) {
+          return object.metadata
+      }
+      else {
+          return []
+      }
     },
     tabsExt(state) {
       return state.tabs.map(item => {
@@ -136,15 +133,12 @@ const getters = {
 
         return tables
     },
-    getSelectedConnectionObj(state) {
-        return state.connections.find(item => item.name == state.selectedConnection)
-    },
 }
 
 const actions = {
-    async actMetadata({commit,state}) {
+    async actMetadata({commit,state,rootState }) {
         commit('SET_LOAD_METADATA', true)
-        let selectedConnection = state.selectedConnection
+        let selectedConnection = rootState.connection.selectedConnection
         const metadata = await axios.post(getters.dataServer() +  "/metadataCatalog", {"database":selectedConnection})
         commit('setMetadata', {connectionName : selectedConnection, metadata : metadata.data})
         commit('SET_LOAD_METADATA', false)
@@ -171,14 +165,7 @@ const actions = {
         .then(result => commit('SET_CONNECTIONS', result.data))
         return connections
     },
-    async connectToDataServer({commit,state}) {
-        commit('SET_CONNECTION_ICON', "mdi-sync-circle")
-        const connections = await axios.get(getters.dataServer() + "/connections")
-        commit('SET_CONNECTIONS', connections.data)
-        commit('SET_SELECTED_CONNECTION', connections.data[0].name)
-        commit('SET_CONNECTION_ICON', "mdi-check-circle")
-        return connections
-    },
+
     addNewTab({commit,state}) {
         commit("addTab")
         commit('SET_SELECTED_TAB', state.tabs.length -1 )
@@ -210,10 +197,10 @@ const actions = {
         tab.edited = false 
         commit("changeTab", {tabIndex, payload : tab})
     },
-    sendSQL({commit,state}) {
+    sendSQL({commit,state, rootState}) {
         commit("SET_QUERY_PROGRESS_BAR", true)
         var body =  {
-            database: state.selectedConnection,
+            database: rootState.connection.selectedConnection,
             query: state.tabs[state.selectedTab].query,
             limit: state.limitRows,
             batchSize: state.batchSize,
@@ -241,8 +228,8 @@ const actions = {
         state.resultTable[resultTableTab].data = state.resultTable[resultTableTab].data.concat(result.data.data)
         state.resultTable[resultTableTab].endCursor = result.data.endCursor
     },
-    async setDefaultCatalog({commit,state}, catalog) {
-        const result = await axios.post(getters.dataServer() + "/setDefaultCatalog", {database : state.selectedConnection, catalog})
+    async setDefaultCatalog({commit,state, rootState}, catalog) {
+        const result = await axios.post(getters.dataServer() + "/setDefaultCatalog", {database : rootState.connection.selectedConnection, catalog})
     },
     async openFile({state,commit}, fileObj) {
         const file = await axios.post(getters.dataServer() + "/getOneFile", fileObj)

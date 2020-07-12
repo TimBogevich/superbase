@@ -12,7 +12,7 @@
 export default {
     name: 'App',    
     created: async function() {
-      const connection = await this.$store.dispatch("general/connectToDataServer")
+      const connection = await this.$store.dispatch("connection/connectToDataServer")
       const metadata = this.$store.dispatch("general/actMetadata")
       const files = this.$store.dispatch("general/getFiles")
       Promise.all([metadata, files])

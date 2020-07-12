@@ -37,10 +37,10 @@ export default {
         }
     },
     computed: {
-        connections : sync("general/connections"),
+        connections : sync("connection/connections"),
         createNewConnection : sync("general/createNewConnection"),
         mainProgressBar : sync("general/mainProgressBar"),
-        selectedConnectionManager : sync('general/selectedConnectionManager'),
+        selectedConnectionManager : sync('connection/selectedConnectionManager'),
         convertDate: get("general/convertDate"),
         item () {
             return this.selectedConnectionManager[0] 
