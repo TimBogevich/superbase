@@ -1,6 +1,6 @@
 <template>
     <div id="codeIditorResizable" >
-        <v-tabs append-icon="mdi-plus" v-model="selectedTab">
+        <v-tabs height="40" append-icon="mdi-plus" v-model="selectedTab">
                 <v-hover v-for="(item, index) in tabsExt" :key="index"
                 v-slot:default="{ hover }"
                 >
@@ -13,7 +13,7 @@
                     </v-tab>
                 </v-hover>
             <v-btn 
-            @click="addTab()"
+            @click="addNewTab()"
             color="gray"
             class="align-self-center mr-4">
                 NEW
@@ -37,6 +37,8 @@ import 'codemirror/addon/hint/sql-hint';
 import 'codemirror/addon/hint/anyword-hint';
 import 'codemirror/mode/sql/sql'
 import { get,sync} from 'vuex-pathify'
+import { mapActions } from 'vuex'
+
 
 export default {
     data() {
@@ -89,6 +91,9 @@ export default {
 
     },
     methods: { 
+    ...mapActions('general', [ 
+      'addNewTab', 
+    ]),
       onCodemirrorReady (cm) {
          cm.on('cursorActivity', () => {
           cm.eachLine((line) => {
@@ -120,9 +125,6 @@ export default {
         cm.on('keypress', () => {
           cm.showHint({completeSingle:false})
         })
-      },
-      addTab() {
-          this.$store.dispatch("general/addNewTab")
       },
       closeOrSaveTab(item) {
         if (this.tabs[item].edited) {

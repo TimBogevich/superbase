@@ -9,13 +9,17 @@
           disable-sort
           hide-default-footer
           dense
-        ></v-data-table>
+        >
+          <template v-slot:item.updatedAt="{ item }">
+            {{ convertDate(item.updatedAt, 'DD.MM.YYYY HH:mm') }}
+          </template>
+        </v-data-table>
       </div>
 
       <multipane-resizer></multipane-resizer>
       <div :style="{ height: '300px', maxHeight: '300px' }">
         <v-sheet
-          v-if="Object.keys(selectedJob) != 0"
+          v-if="selectedJob.length != 0"
           class="scrollableContainer"
           height="300px"
           width="100%"
@@ -25,7 +29,8 @@
           :headers="jobHistoryHeader"
           :sort-by="['start_dt']"
           sort-desc
-          :items="selectedJob.jobshistories">
+          dense
+          :items="selectedJob[0].jobshistories">
             <template v-slot:item.end_dt="{ item }">
               {{ convertDate(item.end_dt, 'DD.MM.YYYY HH:mm') }}
             </template>
@@ -72,14 +77,10 @@ export default {
         { text: "Job Id", value: "jobid" },
         { text: "Pattern", value: "pattern" },
         { text: "Command", value: "command" },
-        { text: "Start", value: "start_dt" },
-        { text: "End", value: "end_dt" },
+        { text: "Last update", value: "updatedAt" },
         { text: "Status", value: "status" }
       ],
       jobHistoryHeader: [
-        { text: "Job Id", value: "jobid" },
-        { text: "Run Id", value: "runid" },
-        { text: "Pattern", value: "pattern" },
         { text: "Command", value: "command" },
         { text: "Start", value: "start_dt" },
         { text: "End", value: "end_dt" },
@@ -88,10 +89,7 @@ export default {
     };
   },
   watch: {
-    selectedJob(newSelectedJob) {
-      this.jobHistoryBottom =
-        Object.keys(newSelectedJob).length > 0 ? true : false;
-    }
+
   },
   methods: {
   },
@@ -109,9 +107,13 @@ export default {
 </script>
 
 <style>
+
 .scrollableContainer {
   overflow: auto;
 }
 
+a {
+  color: aliceblue !important;
+}
 
 </style>

@@ -4,7 +4,7 @@
         <v-progress-linear v-if="this.queryProgressBar == true" color="yellow darken-2" indeterminate></v-progress-linear>
         <v-progress-linear v-if="this.queryProgressBar == 'success'" color="green darken-2"></v-progress-linear>
         <v-progress-linear v-if="this.queryProgressBar == 'failed'" color="red darken-2"></v-progress-linear>
-        <v-tabs v-model="bottomPanelTab">
+        <v-tabs height="40" v-model="bottomPanelTab">
             <v-tab key="0">Result</v-tab>
             <v-tab key="1">Compiled SQL</v-tab>
             <v-tab key="2">Output</v-tab>
@@ -67,6 +67,7 @@
               <v-text-field
                 class="ml-2 mr-6"
                 filled
+                dense
                 clearable
                 label="Search"
                 v-model="queryHistorySearch"
@@ -157,14 +158,13 @@ export default {
       output : get("general/output"),
       queryProgressBar: get("general/queryProgressBar"),
       resultTable : get('general/resultTable'),
+      queryHistory: get("general/queryHistory"),
       query: {
         get: get("general/getCurrentQuery"),
         set(value) {
           this.$store.commit("general/setCurrentQuery", value);
         }
       },
-      queryHistory: get("general/queryHistory"),
-
     },
     watch: {
       leftDrawerCatalogActive(newLeftDrawerCatalogActive, oldLeftDrawerCatalogActive) {

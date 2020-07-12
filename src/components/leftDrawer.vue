@@ -38,12 +38,16 @@
           <div v-if="leftDrawerBottom==0">
             <v-select
               v-model="selectedConnection"
-              @change="updateMetadata()"
+              @change="actMetadata()"
               outlined
+              dense
+              item-text="name"
+              item-value="name"
               append-icon="mdi-server"
-              :items="connectionsList"
+              :items="connections"
+              single-line
             >
-              <template v-slot:selection="{ item }">{{item }} - {{ catalog }}</template>
+              <template v-slot:selection="{ item }">{{item.name }} - {{ catalog }}</template>
             </v-select>
             <v-progress-linear
               v-if="loadMetadata==true"
@@ -105,7 +109,6 @@
           </div>
 
           <div v-if="leftDrawerBottom==1">
-            <div id="saver"></div>
             <v-treeview
               v-if="loadMetadata==false"
               :open="open"
@@ -141,6 +144,17 @@
           </div>
 
           <div v-if="leftDrawerBottom==2">
+          <v-simple-table dense>
+              <template v-slot:default>
+                <thead>
+                  <tr>
+                    <th class="text-left">
+                      Connection name
+                    </th>
+                  </tr>
+                </thead>
+              </template>
+            </v-simple-table>
             <v-treeview
               :items="connections"
               activatable
@@ -152,16 +166,82 @@
               <template v-slot:prepend="{}">
                 <v-icon>mdi-network</v-icon>
               </template>
-              <template v-slot:label="{ item }">
-                <div @click="setNewCatalog(item)">{{item.name}} - {{item.status}}</div>
+              <template v-slot:append="{ item }">
+                <v-menu left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn small dark icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+
+                  <v-list>
+                    <v-list-item key="0" @click="jobPropertiesDialog=true">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item key="1" @click="disconnectDatabase(item.name)">
+                      <v-list-item-title>Disconnect</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item key="2" @click="reconnectToDatabase(item.name)">
+                      <v-list-item-title>Connect (reconnect)</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
               </template>
             </v-treeview>
-            <v-btn @click="createNewConnection=true" block>+</v-btn>
           </div>
 
           
           <div v-if="leftDrawerBottom==3">
-            <v-data-table
+          <v-simple-table dense>
+              <template v-slot:default>
+                <thead>
+                  <tr>
+                    <th class="text-left">
+                      Job name
+                    </th>
+                  </tr>
+                </thead>
+              </template>
+            </v-simple-table>
+            <v-treeview
+              :open="open"
+              activatable
+              :items="jobs"
+              :active.sync="selectedJob"
+              item-text="name"
+              item-key="jobid"
+              return-object
+            >
+              <template v-slot:prepend="{ item, open }">
+                <v-icon small> mdi-run</v-icon>
+              </template>
+              <template v-slot:append="{ item }">
+                <v-progress-circular 
+                class="mr-1"
+                v-if="jobLoaderById.indexOf(item.jobid) >= 0"
+                indeterminate
+                :size="25"
+                color="primary"
+                ></v-progress-circular>
+                <v-menu left>
+                  <template v-slot:activator="{ on }">
+                    <v-btn small dark icon v-on="on">
+                      <v-icon>mdi-dots-vertical</v-icon>
+                    </v-btn>
+                  </template>
+
+                  <v-list>
+                    <v-list-item key="0" @click="jobPropertiesDialog=true">
+                      <v-list-item-title>Edit</v-list-item-title>
+                    </v-list-item>
+                    <v-list-item key="1" @click="jobRun(item.jobid)">
+                      <v-list-item-title>Run manual</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+              </template>
+            </v-treeview>
+            <!-- <v-data-table
             class="transparentTable"
             :headers='[{text : "Job Name", value : "name"}]'
             :items="jobs"
@@ -203,7 +283,7 @@
                   </v-row>
                 </a>
               </template>
-            </v-data-table>
+            </v-data-table> -->
           </div>
 
 
@@ -244,6 +324,7 @@
 
 <script>
 import { get, sync, call } from "vuex-pathify";
+import { mapActions } from 'vuex'
 import axios from "axios";
 
 export default {
@@ -258,8 +339,7 @@ export default {
   },
   computed: {
     jobs : sync('jobRunner/jobs'),
-    selectedJob : get('jobRunner/selectedJob'),
-    selectedJobId : sync('jobRunner/selectedJobId'),
+    selectedJob : sync('jobRunner/selectedJob'),
     jobPropertiesDialog : sync("jobRunner/jobPropertiesDialog"),
     jobLoaderById : sync('jobRunner/jobLoaderById'),
     dataServer : get('general/dataServer'),
@@ -277,7 +357,6 @@ export default {
     selectedConnectionManager: sync("general/selectedConnectionManager"),
     leftDrawerBottom: sync("general/leftDrawerBottom"),
     saveFileDialog: sync("general/saveFileDialog"),
-    connectionsList: get("general/getConnectionList"),
     query: {
       get: get("general/getCurrentQuery"),
       set(value) {
@@ -286,24 +365,20 @@ export default {
     }
   },
   methods: {
+    ...mapActions('general', [ 
+      'disconnectDatabase', 
+      'reconnectToDatabase',  
+      'openFile',  
+      'deleteFile',  
+      'actMetadata',  
+    ]),
     async jobRun(jobid) {
       const result = await axios.post(`${this.dataServer}/jobs/${jobid}`,{operation : "run"});
-    },
-    selectJob(value) {
-      if(this.selectedJobId && this.selectedJobId == value.jobid) {
-        this.selectedJobId = null
-      }
-      else {
-        this.selectedJobId = value.jobid
-      }
     },
     refresh() {
       if (this.leftDrawerBottom==3) {
         const jobs = this.$store.dispatch("jobRunner/getJobs")
       }
-    },
-    updateMetadata() {
-      this.$store.dispatch("general/actMetadata");
     },
     async expandMetadataTree(item) {
       let metadataItem = {
@@ -325,12 +400,6 @@ export default {
         this.catalog = item.objectName;
       }
     },
-    openFile(fileObj) {
-      this.$store.dispatch("general/openFile", fileObj);
-    },
-    deleteFile(fileObj) {
-      this.$store.dispatch("general/deleteFile", fileObj);
-    },
     generateSelect(item) {
       this.query = `${this.query} \nSELECT * FROM ${item.catalog}.${item.objectName}${this.codeEditorDevider}`;
     },
@@ -342,6 +411,7 @@ export default {
     generateDelete(item) {
       this.query = `${this.query} \nDELETE FROM ${item.catalog}.${item.objectName}${this.codeEditorDevider}`;
     },
+    
   }
 };
 </script>
@@ -378,5 +448,8 @@ export default {
    background-color: transparent !important;
 }
 
+.v-treeview-node__root {
+    min-height: 32px !important;
+}
 </style>
 

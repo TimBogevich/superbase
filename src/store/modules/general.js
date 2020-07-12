@@ -139,9 +139,6 @@ const getters = {
     getSelectedConnectionObj(state) {
         return state.connections.find(item => item.name == state.selectedConnection)
     },
-    getConnectionList(state) {
-      return state.connections.map((item) => item.name)
-    },
 }
 
 const actions = {

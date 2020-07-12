@@ -6,7 +6,7 @@ import WebSocketRecon from "reconnecting-websocket";
 const  state =  {
   jobs : [],
   jobPropertiesDialog : false,
-  selectedJobId : null,
+  selectedJob : [],
   jobLoaderById : [],
 }
 
@@ -18,10 +18,6 @@ const getters = {
   dataServer() {
     return process.env.DATA_SERVER
   },
-  selectedJob(state) {
-    let selected = state.jobs.find(j => j.jobid == state.selectedJobId)
-    return selected ? selected : {}
-  }
 }
 
 const actions = {
