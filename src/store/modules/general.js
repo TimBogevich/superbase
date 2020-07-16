@@ -5,6 +5,7 @@ import moment from 'moment'
 
 const  state =  {
         drawer: true,
+        globalLoader : false,
         resultTable: null,
         selectedTab : 0,
         tabs: [{query:"select * from employees.employees"}],
@@ -87,6 +88,17 @@ const getters = {
       }
       else {
         return "-"
+      }
+    }
+  },
+  convertInterval() {
+    return (begin, end) => {
+      if(begin && end) {
+        let diff = moment(end).diff(moment(begin));
+        return moment.utc(diff).format("HH:mm:ss");
+      }
+      else {
+        return "..."
       }
     }
   },

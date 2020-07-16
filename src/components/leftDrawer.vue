@@ -231,7 +231,7 @@
                   </template>
 
                   <v-list>
-                    <v-list-item key="0" @click="jobPropertiesDialog=true">
+                    <v-list-item key="0" @click="jobForEdit = Object.assign({}, item)">
                       <v-list-item-title>Edit</v-list-item-title>
                     </v-list-item>
                     <v-list-item key="1" @click="jobRun(item.jobid)">
@@ -241,52 +241,7 @@
                 </v-menu>
               </template>
             </v-treeview>
-            <!-- <v-data-table
-            class="transparentTable"
-            :headers='[{text : "Job Name", value : "name"}]'
-            :items="jobs"
-            :value="[selectedJob]"
-            item-key="jobid"
-            dense
-            disable-sort
-            hide-default-footer
-            @click:row="selectJob"
-            >
-              <template v-slot:item.name="{ item }">
-                <a>
-                  <v-row align-content="center">
-                    {{item.name}}
-                    <v-spacer></v-spacer>
-                    <v-progress-circular 
-                    class="mr-1"
-                    v-if="jobLoaderById.indexOf(item.jobid) >= 0"
-                    indeterminate
-                    :size="25"
-                    color="primary"
-                    ></v-progress-circular>
-                    <v-menu left v-else>
-                      <template v-slot:activator="{ on }">
-                        <v-btn small dark icon v-on="on">
-                          <v-icon>mdi-dots-vertical</v-icon>
-                        </v-btn>
-                      </template>
-
-                      <v-list>
-                        <v-list-item key="0" @click="jobPropertiesDialog=true">
-                          <v-list-item-title>Edit</v-list-item-title>
-                        </v-list-item>
-                        <v-list-item key="1" @click="jobRun(item.jobid)">
-                          <v-list-item-title>Run manual</v-list-item-title>
-                        </v-list-item>
-                      </v-list>
-                    </v-menu>
-                  </v-row>
-                </a>
-              </template>
-            </v-data-table> -->
           </div>
-
-
         </v-flex>
       </v-flex>
 
@@ -331,17 +286,14 @@ export default {
   data() {
     return {
       catalog: "(choose catalog)",
-      dialog: true,
-      absolute: false,
-      fileNameToSave: "",
       open: [],
     };
   },
   computed: {
     jobs : sync('jobRunner/jobs'),
     selectedJob : sync('jobRunner/selectedJob'),
-    jobPropertiesDialog : sync("jobRunner/jobPropertiesDialog"),
     jobLoaderById : sync('jobRunner/jobLoaderById'),
+    jobForEdit : sync('jobRunner/jobForEdit'),
     dataServer : get('general/dataServer'),
     codeEditorDevider: sync("general/codeEditorDevider"),
     leftDrawerCatalogActive: sync("general/leftDrawerCatalogActive"),
@@ -375,7 +327,7 @@ export default {
       'reconnectToDatabase',
     ]),
     async jobRun(jobid) {
-      const result = await axios.post(`${this.dataServer}/jobs/${jobid}`,{operation : "run"});
+      const result = await axios.post(`${this.dataServer}/jobs/run/${jobid}`,{operation : "run"});
     },
     refresh() {
       if (this.leftDrawerBottom==3) {

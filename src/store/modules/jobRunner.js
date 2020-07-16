@@ -5,9 +5,9 @@ import WebSocketRecon from "reconnecting-websocket";
 
 const  state =  {
   jobs : [],
-  jobPropertiesDialog : false,
   selectedJob : [],
   jobLoaderById : [],
+  jobForEdit : null,
 }
 
 const mutations =  {
@@ -17,6 +17,9 @@ const mutations =  {
 const getters = {
   dataServer() {
     return process.env.DATA_SERVER
+  },
+  websoketServer(path) {
+    return process.env.WEBSOCKET_SERVER + path
   },
 }
 
@@ -29,13 +32,24 @@ const actions = {
     const history = await axios.get(getters.dataServer() + "/jobs/history")
     commit("SET_JOBS_HISTORY", history.data)
   },
+  async jobEditSave({commit,dispatch}, job) {
+    try {
+      const jb = await axios.post(getters.dataServer() + "/jobs/edit", {job} )
+      await commit("SET_JOB_FOR_EDIT", false)
+      await dispatch("getJobs")
+      
+    } catch (error) {
+      
+    }
+
+  },
 }
 
-const wsRunningJobs = new WebSocketRecon("ws://localhost:8000/jobs/runningJobs", null, {reconnectInterval: 1000});
+const wsRunningJobs = new WebSocketRecon(getters.websoketServer("/jobs/runningJobs"), null, {reconnectInterval: 1000});
 wsRunningJobs.addEventListener("message", function(event) {
   state.jobLoaderById = JSON.parse(event.data);
 });
-const wsJobHistory = new WebSocketRecon("ws://localhost:8000/jobs/jobHistory", null, {reconnectInterval: 1000});
+const wsJobHistory = new WebSocketRecon(getters.websoketServer("/jobs/jobHistory"), null, {reconnectInterval: 1000});
 wsJobHistory.addEventListener("message", function(event) {
   let hist = JSON.parse(event.data)
   let jobIndex = state.jobs.findIndex(j => j.jobid == hist.jobid)

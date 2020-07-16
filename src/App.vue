@@ -22,5 +22,8 @@ export default {
 
 <style>
 
+.theme--dark.v-application {
+    background: #1e1e1e !important;
+}
 </style>
 
