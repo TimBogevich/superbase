@@ -4,6 +4,8 @@ import { make, set, dispatch, get } from 'vuex-pathify'
 import moment from 'moment'
 
 const  state =  {
+        snackBar : false,
+        snackBarMessage : null,
         drawer: true,
         globalLoader : false,
         resultTable: null,
@@ -148,14 +150,16 @@ const getters = {
 }
 
 const actions = {
+  showSnackBar({commit},message) {
+    commit('SET_SNACK_BAR', true)
+    commit('SET_SNACK_BAR_MESSAGE', message)
+  },
     async actMetadata({commit,state,rootState }) {
         commit('SET_LOAD_METADATA', true)
         let selectedConnection = rootState.connection.selectedConnection
         const metadata = await axios.post(getters.dataServer() +  "/metadataCatalog", {"database":selectedConnection})
         commit('setMetadata', {connectionName : selectedConnection, metadata : metadata.data})
         commit('SET_LOAD_METADATA', false)
-
-
     },
 
     addNewTab({commit,state}) {

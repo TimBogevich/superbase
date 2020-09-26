@@ -55,21 +55,27 @@
       transition="dialog-transition"
     >
       <v-card class="pa-3">
-        <v-card-title primary-title>
+        <v-card-title v-if="jobForEdit.jobid" primary-title>
           Edit job
+        </v-card-title>
+        <v-card-title v-else primary-title>
+          Create job
         </v-card-title>
         <v-card-text>
           <v-text-field 
           label="Name"
+          :rules="rules.required"
           v-model="jobForEdit.name">
           </v-text-field>
           <v-text-field 
           label="Cron pattern"
-          :value="jobForEdit.pattern">
+          :rules="rules.required"
+          v-model="jobForEdit.patternt">
           </v-text-field>
           <v-text-field 
           label="Command"
-          :value="jobForEdit.command">
+          :rules="rules.required"
+          v-model="jobForEdit.command">
           </v-text-field>
           <v-switch
             v-model="jobForEdit.status"
@@ -79,7 +85,8 @@
           ></v-switch>
         </v-card-text>
         <v-card-actions>
-          <v-btn @click="jobEditSave(jobForEdit)">Save</v-btn>
+          <v-btn v-if="jobForEdit.jobid" @click="jobEditSave(jobForEdit)">Save</v-btn>
+          <v-btn v-else @click="jobCreateSave(jobForEdit)">Create</v-btn>
         </v-card-actions>
       </v-card>
     </v-dialog>
@@ -98,6 +105,9 @@ export default {
   },
   data() {
     return {
+      rules : {
+        required : [v => !!v || 'Name is required']
+      },
       jobHistoryBottom: false,
       dialogTableEdit : true,
       jobHeader: [
@@ -123,7 +133,9 @@ export default {
   methods: {
     jobEditSave(job) {
       this.$store.dispatch("jobRunner/jobEditSave", job)
-      
+    },
+    jobCreateSave(job) {
+      this.$store.dispatch("jobRunner/jobCreateSave", job)
     }
   },
   computed: {

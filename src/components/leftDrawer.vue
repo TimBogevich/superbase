@@ -175,7 +175,7 @@
                   </template>
 
                   <v-list>
-                    <v-list-item key="0" @click="jobPropertiesDialog=true">
+                    <v-list-item key="0" @click="connectionForEdit = Object.assign({}, item)">
                       <v-list-item-title>Edit</v-list-item-title>
                     </v-list-item>
                     <v-list-item key="1" @click="disconnectDatabase(item.name)">
@@ -260,7 +260,7 @@
                 <span>Refresh</span>
                 <v-icon>mdi-refresh</v-icon>
               </v-btn>
-              <v-btn disabled>
+              <v-btn @click="addNewJob()" v-if="leftDrawerBottom==3">
                 <span>Add</span>
                 <v-icon>mdi-plus-circle</v-icon>
               </v-btn>
@@ -302,6 +302,7 @@ export default {
     selectedConnection: sync("connection/selectedConnection"),
     fileManager: get("general/fileManager.files"),
     connections: sync("connection/connections"),
+    connectionForEdit: sync("connection/connectionForEdit"),
     metadata: get("general/getMetadata"),
     createNewConnection: sync("general/createNewConnection"),
     loadMetadata: get("general/loadMetadata"),
@@ -365,6 +366,9 @@ export default {
     generateDelete(item) {
       this.query = `${this.query} \nDELETE FROM ${item.catalog}.${item.objectName}${this.codeEditorDevider}`;
     },
+    addNewJob() {
+      this.jobForEdit = {}
+    }
     
   }
 };

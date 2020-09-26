@@ -8,6 +8,7 @@ const  state =  {
   selectedConnection: null,
   selectedConnectionManager : [],
   createNewConnection : false,
+  connectionForEdit : null,
 }
 
 const mutations =  {
@@ -49,6 +50,15 @@ const actions = {
       const connections = axios.get(getters.dataServer() + "/connections")
       .then(result => commit('SET_CONNECTIONS', result.data))
       return connections
+  },
+  async testConnection({dispatch},conn) {
+    try {
+      await axios.post(getters.dataServer() + "/connections/testConnection", conn)
+      this.dispatch("general/showSnackBar", "connected")
+    } catch (error) {
+      this.dispatch("general/showSnackBar", error.response.statusText)
+    } 
+
   },
 
 }

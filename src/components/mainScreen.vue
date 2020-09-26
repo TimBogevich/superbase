@@ -23,7 +23,9 @@
             <jobRunner absolute />
         </v-flex>
     </v-content>
-    
+    <v-snackbar v-model="snackBar">
+      {{snackBarMessage}}
+    </v-snackbar>
 
   </div>
 </template>
@@ -53,6 +55,8 @@ export default {
   },
   computed: {
       leftDrawerBottom : sync("general/leftDrawerBottom"),
+      snackBar : sync("general/snackBar"),
+      snackBarMessage : sync("general/snackBarMessage"),
   },
 };
 </script>

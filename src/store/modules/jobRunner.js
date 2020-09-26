@@ -38,6 +38,16 @@ const actions = {
       await commit("SET_JOB_FOR_EDIT", false)
       await dispatch("getJobs")
       
+    } catch (error) {}
+
+  },
+  async jobCreateSave({commit,dispatch}, job) {
+    try {
+      job.createdt = new Date()
+      const jb = await axios.post(getters.dataServer() + "/jobs/create", {job} )
+      await commit("SET_JOB_FOR_EDIT", false)
+      await dispatch("getJobs")
+      
     } catch (error) {
       
     }
